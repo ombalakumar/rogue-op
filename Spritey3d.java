@@ -1,0 +1,102 @@
+// Spritey3d.java
+// Spritey class extended with pseudo-3D perspective
+//
+// Copyright ©2010 Brigham Toskin
+// This software is part of the Rogue-Opcode game framework. It is distributable
+// under the terms of a modified MIT License. You should have received a copy of
+// the license in the file LICENSE. If not, see:
+// <http://code.google.com/p/rogue-op/wiki/LICENSE>
+//
+// Formatting:
+//	80 cols ; tabwidth 4
+////////////////////////////////////////////////////////////////////////////////
+
+
+package rogue_opcode;
+
+
+import android.graphics.Canvas;
+import android.graphics.RectF;
+
+
+/**
+ * Extends the Spritey paradigm to allow for pseudo-3d perspective correction.
+ * This is achieved by simply scaling the size and XY drift of sprites based on
+ * how far from the "camera" they are along the the Z axis.
+ * <br /><br />
+ * Some important differences from a standard {@code Spritey} to note: this
+ * class treats the center of the screen as (0,0,0), positive Y is toward the
+ * top of the screen, and positive Z into the screen. Additionally, sprites are
+ * drawn centered, rather than from the top-left corner.
+ * <br /><br />
+ * <b>Example:</b> Drawing a sprite at (0,0,0) will draw it centered on the
+ * screen with a scaling factor of 1.0.
+ *
+ * @see Spritey
+ * @author Brigham Toskin
+ */
+public class Spritey3d extends Spritey
+{
+	private static final long serialVersionUID = 7198684330563604332L;
+
+	public static float sFarZ = 800;
+
+	protected RectF mDrawDest;
+
+	// c'tor ///////////////////////////////////////////////////////////////////
+
+	/**
+	 * @param pResourceID
+	 * @param pFrameCount
+	 */
+	public Spritey3d(int pResourceID, int pFrameCount)
+	{
+		super(pResourceID, pFrameCount);
+		mDrawDest = new RectF();
+	}
+
+	/**
+	 * @param pResourceID
+	 * @param pFrameCount
+	 * @param pX
+	 * @param pY
+	 */
+	public Spritey3d(int pResourceID, int pFrameCount, int pX, int pY, int pZ)
+	{
+		super(pResourceID, pFrameCount, pX, pY);
+		mDrawDest = new RectF();
+		ZDepth(pZ);
+	}
+
+	// game loop callbacks /////////////////////////////////////////////////////
+
+	/**
+	 * Draws the object at it's specified position, scaled for pseudo-3D
+	 * perspective based on Z distance.
+	 *
+	 * @see rogue_opcode.Spritey#Draw()
+	 */
+	// TODO: separate z vals for vanishing point and far clip
+	@Override
+	public void Draw()
+	{
+		Canvas tCanvas = AnimatedView.Singleton().CurrentCanvas();
+		if(tCanvas == null || mPos.z > sFarZ) // not ready or far clip
+			return;
+
+		XYf tPos = mPos;
+		float tScreenW = AnimatedView.Singleton().ScreenWidth();
+		float tScreenH = AnimatedView.Singleton().ScreenHeight();
+
+		float tMultiplier = (sFarZ - mPos.z) / sFarZ;
+		float tLeft = (tPos.x - mFrameWidth / 2) * tMultiplier + tScreenW / 2;
+		float tTop = tScreenH / 2 - (tPos.y - mFrameHeight / 2) * tMultiplier;
+		RectF tDrawDest = mDrawDest;
+		tDrawDest.left = tLeft;
+		tDrawDest.top = tTop;
+		tDrawDest.right = tLeft + mFrameWidth * tMultiplier;
+		tDrawDest.bottom = tTop + mFrameHeight * tMultiplier;
+		// XXX: toRect might be very inefficient!
+		tCanvas.drawBitmap(mGR.mImage, mFrame.toRect(), tDrawDest, null);
+	}
+}
