@@ -1,7 +1,7 @@
 // AnimatedView.java
 // AnimatedView class, Android version.
 //
-// Copyright ©2010 Brigham Toskin
+// Copyright ©2010 Christopher R Tooley, Brigham Toskin
 // This software is part of the Rogue-Opcode game framework. It is distributable
 // under the terms of a modified MIT License. You should have received a copy of
 // the license in the file LICENSE. If not, see:
