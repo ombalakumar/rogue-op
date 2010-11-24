@@ -122,6 +122,7 @@ public class AnimatedView
 	}
 
 	// XXX: is this still relevant?
+	// yes, but we need to finish supporting it.
 	public void SetKeepCenteredSE(ScreenElement pKeepCenteredSE)
 	{
 		mKeepCenteredSE = pKeepCenteredSE;
