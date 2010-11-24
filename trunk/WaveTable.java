@@ -50,4 +50,14 @@ public abstract class WaveTable
 	 * on the current member parameters.
 	 */
 	public abstract void Generate();
+
+	/**
+	 * Returns the correct sample at the requested frequency and phase location.
+	 * @param pPhase the current phase of the generated waveform.
+	 * @param pFreq tone frequency in Hz.
+	 */
+	public float Sample(int pPhase, float pFreq)
+	{
+		return 0;
+	}
 }
