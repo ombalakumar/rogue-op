@@ -58,6 +58,6 @@ public abstract class WaveTable
 	 */
 	public float Sample(int pPhase, float pFreq)
 	{
-		return 0;
+		return 1.0f;
 	}
 }
