@@ -39,7 +39,23 @@ public class Spritey3d extends Spritey
 {
 	private static final long serialVersionUID = 7198684330563604332L;
 
-	public static float sFarZ = 800;
+	public static float sCameraW, sCameraH;
+	public static float sNormalZ;
+	public static float sFarZ;
+	public static float sVanishingZ;
+	static
+	{
+		sCameraW = 2f;
+		sCameraH = 3f;
+		float tRatio = (float)AnimatedView.sOnly.mScreenWidth
+				/ (float)AnimatedView.sOnly.mScreenHeight;
+		if(AnimatedView.sOnly.mBaseAspectRatio < tRatio)
+			sNormalZ = AnimatedView.sOnly.mScreenWidth / sCameraW;
+		else
+			sNormalZ = AnimatedView.sOnly.mScreenHeight / sCameraH;
+		sVanishingZ = sNormalZ * 7;
+		sFarZ = sVanishingZ;// - 200;
+	}
 
 	protected RectF mDrawDest;
 
@@ -76,7 +92,6 @@ public class Spritey3d extends Spritey
 	 *
 	 * @see rogue_opcode.Spritey#Draw()
 	 */
-	// TODO: separate z vals for vanishing point and far clip
 	@Override
 	public void Draw()
 	{
@@ -88,7 +103,7 @@ public class Spritey3d extends Spritey
 		float tScreenW = AnimatedView.Singleton().ScreenWidth();
 		float tScreenH = AnimatedView.Singleton().ScreenHeight();
 
-		float tMultiplier = (sFarZ - mPos.z) / sFarZ;
+		float tMultiplier = (sVanishingZ - mPos.z) / (sVanishingZ - sNormalZ);
 		float tLeft = (tPos.x - mFrameWidth / 2) * tMultiplier + tScreenW / 2;
 		float tTop = tScreenH / 2 - (tPos.y - mFrameHeight / 2) * tMultiplier;
 		RectF tDrawDest = mDrawDest;
