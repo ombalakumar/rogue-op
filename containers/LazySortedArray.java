@@ -17,6 +17,9 @@ package rogue_opcode.containers;
 import java.util.Arrays;
 import java.util.Comparator;
 
+import rogue_opcode.GameProc;
+import android.util.Log;
+
 
 /**
  * {@code LazySortedArray} is an efficient, array-based, sorted structure. It is
@@ -120,6 +123,21 @@ public class LazySortedArray<E> extends Array<E>
 		return super.Last();
 	}
 
+	/**
+	 * Retrieve element at offset <code>pIndex</code>. Asserts dirty flag.
+	 *
+	 * @param pIndex offset from beginning of array to retrieve element.
+	 * @return the element at the requested index.
+	 * @throws Exception if <code>pIndex</code> is out of bounds.
+	 * @see rogue_opcode.containers.Array#At(int)
+	 */
+	@Override
+	public E At(int pIndex) throws Exception
+	{
+		mDirty = true;
+		return super.At(pIndex);
+	}
+
 	// sorting interfaces //////////////////////////////////////////////////////
 
 	/**
@@ -129,7 +147,16 @@ public class LazySortedArray<E> extends Array<E>
 	{
 		synchronized(this)
 		{
-			Arrays.sort(data, 0, size, mComparator);
+			if(size < 1)
+				return;
+			try
+			{
+				Arrays.sort(data, 0, size, mComparator);
+			}
+			catch(Exception e)
+			{
+				Log.d(GameProc.TAG, "(sorting exception)");
+			}
 			mDirty = false;
 		}
 	}
