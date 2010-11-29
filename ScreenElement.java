@@ -17,6 +17,10 @@ package rogue_opcode;
 
 import java.util.Comparator;
 
+import rogue_opcode.containers.LazySortedArray;
+import rogue_opcode.geometrics.XYZf;
+import rogue_opcode.geometrics.XYf;
+
 import android.graphics.Canvas;
 import android.util.Log;
 
@@ -239,15 +243,12 @@ public class ScreenElement extends ActionElement
 	 */
 	public void Draw()
 	{
-		Canvas tCanvas = AnimatedView.Singleton().CurrentCanvas();
-		if(tCanvas != null)
-		{
-			if(mGR != null)
-				tCanvas.drawBitmap(mGR.mImage, mPos.x, mPos.y, null);
-			if(mText != null && mText.length() > 0)
-				tCanvas.drawText(mText, mPos.x, mPos.y,
-					AnimatedView.sOnly.mDebugPaint);
-		}
+		Canvas tCanvas = AnimatedView.sCurrentCanvas;
+		if(mGR != null)
+			tCanvas.drawBitmap(mGR.mImage, mPos.x, mPos.y, null);
+		if(mText != null && mText.length() > 0)
+			tCanvas.drawText(mText, mPos.x, mPos.y,
+					AnimatedView.sOnly.mPaint);
 	}
 }
 

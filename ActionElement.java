@@ -16,6 +16,8 @@ package rogue_opcode;
 
 import java.io.Serializable;
 
+import rogue_opcode.containers.Array;
+
 import android.util.Log;
 
 

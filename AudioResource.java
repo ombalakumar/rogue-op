@@ -17,6 +17,9 @@ package rogue_opcode;
 import java.io.Serializable;
 import java.util.HashMap;
 
+import rogue_opcode.soundy.MusicTrack;
+import rogue_opcode.soundy.SoundEffect;
+
 
 /**
  * Defines a common interface for audio objects.
@@ -41,7 +44,42 @@ public abstract class AudioResource implements Serializable
 	protected float mGain;
 	protected float mPan;
 
-	// c'tor //
+	// c'tor, etc. //
+
+	/**
+	 * Constructs an <code>AudioResource</code> instance, defaulting to the more
+	 * expensive but safer implementation to allow for longer audio files.
+	 *
+	 * @param pResID audio resource to load.
+	 * @return a newly constructed specific instance.
+	 * @see AudioResource#ICanHas(int, boolean)
+	 */
+	public static AudioResource ICanHas(int pResID)
+	{
+		return ICanHas(pResID, true);
+	}
+
+	/**
+	 * Constructs an <code>AudioResource</code> instance based on the hint
+	 * parameter <code>pLongPlayback</code>. A limitation of the Android audio
+	 * APIs is that the underlying <code>SoundPool</code> objects are ill suited
+	 * to playing audio samples that are longer than just a few seconds. As an
+	 * alternative, this method can instantiate an implementation that utilizes
+	 * <code>MediaPlayer</code> on the back end; this allows for longer audio
+	 * clips at the expense of more computational resources.
+	 * 
+	 * @param pResID audio resource to load.
+	 * @param pLongPlayback hint as to whether this file is longer than a few
+	 *        seconds; this parameter affects which underlying implementation is
+	 *        constructed.
+	 * @return a newly constructed specific instance.
+	 * @see AudioResource#ICanHas(int)
+	 */
+	public static AudioResource ICanHas(int pResID, boolean pLongPlayback)
+	{
+		return pLongPlayback ? new MusicTrack(pResID) : new SoundEffect(pResID);
+	}
+
 	protected AudioResource(int pResID)
 	{
 		sAllARs.put(pResID, this);
@@ -109,7 +147,7 @@ public abstract class AudioResource implements Serializable
 	 * resource} ID, if it exists. You may optionally override this method in
 	 * class implementations to create an appropriate instance if the resource
 	 * hasn't been previously loaded.
-	 * 
+	 *
 	 * @param pResID the {@code resource} ID to retrieve.
 	 * @return the found {@code AudioResource} instance, or {@code null} if it
 	 *         hasn't been loaded.

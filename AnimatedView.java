@@ -14,6 +14,7 @@
 
 package rogue_opcode;
 
+import rogue_opcode.geometrics.XYf;
 import android.app.Activity;
 import android.content.Context;
 import android.graphics.Canvas;
@@ -28,22 +29,22 @@ import android.view.SurfaceView;
 public class AnimatedView
 	extends SurfaceView implements SurfaceHolder.Callback, Runnable
 {
-	// TODO: make these static for performance when possible? //
-
 	// self-refs
-	protected static AnimatedView sOnly;
+	public static AnimatedView sOnly;
 	protected static Thread sRenderThread;
+
+	// TODO: make these static for performance when possible? //
 
 	// physical screen stuff
 	protected SurfaceHolder mHolder;
-	protected Canvas mCurrentCanvas;
+	public static Canvas sCurrentCanvas;
 	protected boolean mHasSurface = false;
 	protected int mScreenWidth, mScreenHeight;
 	protected boolean mSized = false;
 
 	// Base refers to desired dimensions and aspect ratio of the ideal machine,
 	// used for reference when scaling virtual dimensions to physical dimensions
-	protected int mBaseWidth, mBaseHeight;
+	protected int mLogicalWidth, mLogicalHeight;
 	protected float mBaseAspectRatio;
 	public float mPreScaler = 1.0f;
 
@@ -55,7 +56,7 @@ public class AnimatedView
 	ScreenElement mKeepCenteredSE = null;
 
 	// debug stats
-	protected Paint mDebugPaint;
+	protected Paint mPaint;
 	protected static int sFramesDrawn;
 	protected static boolean sDebug;
 
@@ -69,8 +70,8 @@ public class AnimatedView
 		sOnly = this;
 
 		// init debug stats
-		mDebugPaint = new Paint();
-		mDebugPaint.setColor(Color.WHITE);
+		mPaint = new Paint();
+		mPaint.setColor(Color.WHITE);
 		sFramesDrawn = 0;
 		sDebug = false;
 
@@ -87,11 +88,6 @@ public class AnimatedView
 		mScreenHeight = tDM.heightPixels;
 	}
 
-	public static AnimatedView Singleton()
-	{
-		return sOnly;
-	}
-
 	// screen and drawing properties ///////////////////////////////////////////
 
 	/**
@@ -105,37 +101,36 @@ public class AnimatedView
 	 */
 	public void NormailzeResolution(int pWidth, int pHeight)
 	{
-		mBaseWidth = pWidth;
-		mBaseHeight = pHeight;
+		mLogicalWidth = pWidth;
+		mLogicalHeight = pHeight;
 
 		mBaseAspectRatio = (float)pWidth / (float)pHeight;
 		float tScreenAspectRatio = (float)mScreenWidth / (float)mScreenHeight;
 		if(mBaseAspectRatio < tScreenAspectRatio)
-			mPreScaler = (float)mScreenHeight / (float)mBaseHeight;
+			mPreScaler = (float)mScreenHeight / (float)mLogicalHeight;
 		else
-			mPreScaler = (float)mScreenWidth / (float)mBaseWidth;
+			mPreScaler = (float)mScreenWidth / (float)mLogicalWidth;
 	}
 
-	public Canvas CurrentCanvas()
-	{
-		return mCurrentCanvas;
-	}
-
-	// XXX: is this still relevant?
-	// yes, but we need to finish supporting it.
+	/**
+	 * The "camera" will scroll around to follow this SE and keep it more or
+	 * less centered on the screen.
+	 *
+	 * @param pKeepCenteredSE ScreenElement to follow.
+	 */
 	public void SetKeepCenteredSE(ScreenElement pKeepCenteredSE)
 	{
 		mKeepCenteredSE = pKeepCenteredSE;
 	}
 
-	public int VirtualWidth()
+	public int LogicalWidth()
 	{
-		return mBaseWidth;
+		return mLogicalWidth;
 	}
 
-	public int VirtualHeight()
+	public int LogicalHeight()
 	{
-		return mBaseHeight;
+		return mLogicalHeight;
 	}
 
 	public int ScreenWidth()
@@ -226,17 +221,17 @@ public class AnimatedView
 		// (You are not expected to understand this—I don't!)
 		if(mKeepCenteredSE != null)
 		{
-			if(((mKeepCenteredSE.mPos.x - (mBaseWidth / 6)) + mBaseHScroll)
-					< (mBaseWidth / 2))
+			if(((mKeepCenteredSE.mPos.x - (mLogicalWidth / 6)) + mBaseHScroll)
+					< (mLogicalWidth / 2))
 				mBaseHScroll += (mScrollSpeed.x * mPreScaler);
-			if(((mKeepCenteredSE.mPos.x + (mBaseWidth / 6)) + mBaseHScroll)
-					> (mBaseWidth / 2))
+			if(((mKeepCenteredSE.mPos.x + (mLogicalWidth / 6)) + mBaseHScroll)
+					> (mLogicalWidth / 2))
 				mBaseHScroll -= (mScrollSpeed.x * mPreScaler);
-			if(((mKeepCenteredSE.mPos.x - (mBaseWidth / 6)) + mBaseHScroll)
-					< (mBaseWidth / 2))
+			if(((mKeepCenteredSE.mPos.x - (mLogicalWidth / 6)) + mBaseHScroll)
+					< (mLogicalWidth / 2))
 				mBaseHScroll += (mScrollSpeed.x * mPreScaler);
-			if(((mKeepCenteredSE.mPos.x + (mBaseWidth / 6)) + mBaseHScroll)
-					> (mBaseWidth / 2))
+			if(((mKeepCenteredSE.mPos.x + (mLogicalWidth / 6)) + mBaseHScroll)
+					> (mLogicalWidth / 2))
 				mBaseHScroll -= (mScrollSpeed.x * mPreScaler);
 
 			// TODO - need to limit how much we allow mBaseHScroll to go - when
@@ -247,8 +242,8 @@ public class AnimatedView
 		}
 
 		// draw world
-		mCurrentCanvas = tCanvas;
-		tCanvas.drawRGB(0, 0, 0); // clear with black
+		sCurrentCanvas = tCanvas;
+		tCanvas.drawRGB(0, 0, 0); // TODO: parameterize whether to do this
 		ScreenElement.sAllSEs.SortIfDirty();
 		for(int i = 0; i < ScreenElement.sAllSEs.size; i++)
 		{
@@ -268,10 +263,10 @@ public class AnimatedView
 		// draw stats
 		if(sDebug)
 		{
-			tCanvas.drawText("Time: " + GameProc.sOnly.Seconds(), 10, 10, mDebugPaint);
-			tCanvas.drawText("FPS:  " + GameProc.sOnly.FPS(), 10, 20, mDebugPaint);
+			tCanvas.drawText("Time: " + GameProc.sOnly.Seconds(), 10, 10, mPaint);
+			tCanvas.drawText("FPS:  " + GameProc.sOnly.FPS(), 10, 20, mPaint);
 		}
-		mCurrentCanvas = null;
+		sCurrentCanvas = null;
 		mHolder.unlockCanvasAndPost(tCanvas);
 	}
 

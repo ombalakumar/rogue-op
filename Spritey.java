@@ -14,6 +14,9 @@
 
 package rogue_opcode;
 
+import rogue_opcode.geometrics.Rectangle;
+import rogue_opcode.geometrics.Rectanglef;
+import rogue_opcode.geometrics.XYf;
 import android.graphics.Canvas;
 import android.graphics.RectF;
 
@@ -78,7 +81,7 @@ public class Spritey extends ScreenElement
 
 	/**
 	 * Handles frame animation and velocity-based displacement updates.
-	 * 
+	 *
 	 * @see rogue_opcode.ScreenElement#Update()
 	 */
 	@Override
@@ -100,7 +103,7 @@ public class Spritey extends ScreenElement
 	@Override
 	public void Draw()
 	{
-		Canvas tCanvas = AnimatedView.Singleton().CurrentCanvas();
+		Canvas tCanvas = AnimatedView.sCurrentCanvas;
 		if(tCanvas != null)
 		{
 			XYf tPos = mPos;
