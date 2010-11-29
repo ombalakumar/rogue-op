@@ -15,6 +15,8 @@
 package rogue_opcode;
 
 
+import rogue_opcode.geometrics.XYf;
+import rogue_opcode.soundy.SoundEffect;
 import android.app.Activity;
 import android.os.Bundle;
 import android.os.SystemClock;
@@ -30,7 +32,7 @@ public class GameProc extends Activity implements Runnable
 	public static final long UPDATE_PERIOD = 1000 / UPDATE_FREQ;
 	public static final String TAG = "ionoclast";
 
-	protected static GameProc sOnly;
+	public static GameProc sOnly;
 	protected static Thread sUpdateThread;
 
 	// stats
@@ -291,12 +293,6 @@ public class GameProc extends Activity implements Runnable
 		}
 	}
 
-	/** Public accessor for static singleton instance. */
-	public static GameProc Singleton()
-	{
-		return sOnly;
-	}
-
 	/** Override this in your derived class to make stuff. */
 	public void InitializeOnce()
 	{
@@ -314,6 +310,7 @@ public class GameProc extends Activity implements Runnable
 
 	// user input callbacks //
 
+	// TODO: Event callback/interface for listeners; sort on Z?
 	@Override
 	public boolean onTouchEvent(MotionEvent pEvent)
 	{

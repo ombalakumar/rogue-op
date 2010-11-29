@@ -15,6 +15,7 @@
 package rogue_opcode;
 
 
+import rogue_opcode.geometrics.XYZf;
 import android.graphics.Canvas;
 import android.graphics.RectF;
 
@@ -42,7 +43,6 @@ public class Spritey3d extends Spritey
 	public static float sCameraW, sCameraH;
 	public static float sNormalZ;
 	public static float sFarZ;
-	public static float sVanishingZ;
 	static
 	{
 		sCameraW = 2f;
@@ -53,8 +53,7 @@ public class Spritey3d extends Spritey
 			sNormalZ = AnimatedView.sOnly.mScreenWidth / sCameraW;
 		else
 			sNormalZ = AnimatedView.sOnly.mScreenHeight / sCameraH;
-		sVanishingZ = sNormalZ * 7;
-		sFarZ = sVanishingZ;// - 200;
+		sFarZ = sNormalZ * 4;
 	}
 
 	protected RectF mDrawDest;
@@ -95,22 +94,22 @@ public class Spritey3d extends Spritey
 	@Override
 	public void Draw()
 	{
-		Canvas tCanvas = AnimatedView.Singleton().CurrentCanvas();
+		Canvas tCanvas = AnimatedView.sCurrentCanvas;
 		if(tCanvas == null || mPos.z > sFarZ) // not ready or far clip
 			return;
 
-		XYf tPos = mPos;
-		float tScreenW = AnimatedView.Singleton().ScreenWidth();
-		float tScreenH = AnimatedView.Singleton().ScreenHeight();
+		XYZf tPos = mPos;
+		float tScreenW = AnimatedView.sOnly.ScreenWidth();
+		float tScreenH = AnimatedView.sOnly.ScreenHeight();
 
-		float tMultiplier = (sVanishingZ - mPos.z) / (sVanishingZ - sNormalZ);
-		float tLeft = (tPos.x - mFrameWidth / 2) * tMultiplier + tScreenW / 2;
-		float tTop = tScreenH / 2 - (tPos.y - mFrameHeight / 2) * tMultiplier;
+		float tScaleFactor = sNormalZ / tPos.z;
+		float tLeft = (tPos.x - mFrameWidth / 2) * tScaleFactor + tScreenW / 2;
+		float tTop = tScreenH / 2 - (tPos.y - mFrameHeight / 2) * tScaleFactor;
 		RectF tDrawDest = mDrawDest;
 		tDrawDest.left = tLeft;
 		tDrawDest.top = tTop;
-		tDrawDest.right = tLeft + mFrameWidth * tMultiplier;
-		tDrawDest.bottom = tTop + mFrameHeight * tMultiplier;
+		tDrawDest.right = tLeft + mFrameWidth * tScaleFactor;
+		tDrawDest.bottom = tTop + mFrameHeight * tScaleFactor;
 		// XXX: toRect might be very inefficient!
 		tCanvas.drawBitmap(mGR.mImage, mFrame.toRect(), tDrawDest, null);
 	}
