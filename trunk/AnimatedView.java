@@ -293,7 +293,6 @@ public class AnimatedView
 			mHasSurface = true;
 			notify();
 		}
-		Log.d(GameProc.TAG, "  completed");
 	}
 
 	@Override
@@ -304,6 +303,5 @@ public class AnimatedView
 		{
 			mHasSurface = false;
 		}
-		Log.d(GameProc.TAG, "  completed");
 	}
 }

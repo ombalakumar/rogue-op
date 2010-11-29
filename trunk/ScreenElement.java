@@ -14,13 +14,11 @@
 
 package rogue_opcode;
 
-
 import java.util.Comparator;
 
 import rogue_opcode.containers.LazySortedArray;
 import rogue_opcode.geometrics.XYZf;
 import rogue_opcode.geometrics.XYf;
-
 import android.graphics.Canvas;
 import android.util.Log;
 
@@ -63,16 +61,20 @@ public class ScreenElement extends ActionElement
 						@Override
 						public int compare(ScreenElement a, ScreenElement b)
 						{
-							int tCmp = (int)Math.signum(b.mPos.z - a.mPos.z);
-							//	if(tCmp == 0 && a != b)
-							//		tCmp = 1; // bump
-							return tCmp;
+							// for some reason, returning 0 throws an exception.
+							// could be a bug in the sorting algo.
+							if(a.mPos.z > b.mPos.z)
+								return -1;
+							//	else if(a.mPos.z == b.mPos.z)
+							//		return 0;
+							else
+								return 1;
 						}
 					});
 		}
 		catch(Exception e)
 		{
-			Log.d(GameProc.TAG, e.toString());
+			Log.d(GameProc.TAG, "ScreenElement.Init()", e);
 		}
 	}
 
