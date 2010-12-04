@@ -68,6 +68,7 @@ public class AnimatedView
 	{
 		super(pContext);
 		sOnly = this;
+		this.setId(0xdeadbeef); // set ID, so OS will manage restoring state
 
 		// init debug stats
 		mPaint = new Paint();
