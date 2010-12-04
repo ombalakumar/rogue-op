@@ -18,6 +18,7 @@ package rogue_opcode;
 import rogue_opcode.geometrics.XYf;
 import rogue_opcode.soundy.SoundEffect;
 import android.app.Activity;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.os.SystemClock;
 import android.util.Log;
@@ -45,15 +46,15 @@ public class GameProc extends Activity implements Runnable
 
 	protected boolean mRunning;
 	protected boolean mRestarting;
+	protected boolean mExiting;
+
+	// app lifecycle ///////////////////////////////////////////////////////////
 
 	/** Called when the activity is first created. */
 	@Override
-	public void onCreate(Bundle savedState)
+	protected void onCreate(Bundle savedState)
 	{
 		Log.d(TAG, "onCreate()");
-
-		// these things need to be recreated every time //
-
 		super.onCreate(savedState);
 		sOnly = this;
 
@@ -63,18 +64,13 @@ public class GameProc extends Activity implements Runnable
 		tWin.addFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN);
 		tWin.clearFlags(WindowManager.LayoutParams.FLAG_FORCE_NOT_FULLSCREEN);
 
-		//		// initialize input data
-		//		mTouching = false;
-		//		mTouchPos = new XYf();
-		//		mTouchArea = new Rect();
-		//
-		//		// initialize stats
-		//		mElapsedTime = 0;
-		//		sSeconds = 0;
-		//		sFPS = 0;
-		//
-		//		mRestarting = false;
-		//
+		new AnimatedView(this);
+
+		// initialize stats
+		mElapsedTime = 0;
+		sSeconds = 0;
+		sFPS = 0;
+
 		//		if(savedState != null)
 		//		{
 		//			Log.d(TAG, "  Restoring state");
@@ -84,97 +80,43 @@ public class GameProc extends Activity implements Runnable
 		//			AudioResource.sAllARs = (HashMap<Integer, AudioResource>)savedState
 		//					.getSerializable("sAllARs");
 		//		}
-		//
-		//		// user-provided init code
-		//		InitializeOnce();
+
+		// user-provided init code
+		InitializeOnce();
 	}
 
-	//	@Override
-	//	public void onSaveInstanceState(Bundle outState)
-	//	{
-	//		Log.d(TAG, "onSaveInstanceState()");
-	//		super.onSaveInstanceState(outState);
-	//		outState.putSerializable("sAllAEs", ActionElement.sAllAEs);
-	//		outState.putSerializable("sAllARs", AudioResource.sAllARs);
-	//	}
-
-	//	/** Called on app shutdown. */
 	@Override
-	public void onDestroy()
+	public void onSaveInstanceState(Bundle outState)
 	{
-		Log.d(TAG, "onDestroy()");
-		super.onDestroy();
-
-		Shutdown();
-
-		// clean some up now
-		Runtime r = Runtime.getRuntime();
-		r.gc();
+		Log.d(TAG, "onSaveInstanceState()");
+		super.onSaveInstanceState(outState);
+		//			outState.putSerializable("sAllAEs", ActionElement.sAllAEs);
+		//			outState.putSerializable("sAllARs", AudioResource.sAllARs);
 	}
-
-	//	/** Called when the activity becomes visible. */
-	//	@Override
-	//	public void onStart()
-	//	{
-	//		Log.d(TAG, "onStart()");
-	//		super.onStart();
-	//		if(!mRestarting)
-	//		{
-	//			Log.d(TAG, "  not restarting");
-	//		}
-	//		else
-	//		{
-	//			Log.d(TAG, "  restarting");
-	//			mRestarting = false;
-	//		}
-	//		if(AnimatedView.sOnly == null)
-	//			AnimatedView.sOnly = new AnimatedView(this);
-	//		(AnimatedView.sRenderThread = new Thread(AnimatedView.sOnly)).start();
-	//	}
-
-	//	/** Called when the activity becomes visible again after being hidden. */
-	//	@Override
-	//	public void onRestart()
-	//	{
-	//		Log.d(TAG, "onRestart()");
-	//		super.onRestart();
-	//		mRestarting = true;
-	//	}
-
-	//	/** Called when the activity becomes hidden. */
-	//	@Override
-	//	public void onStop()
-	//	{
-	//		Log.d(TAG, "onStop()");
-	//		super.onStop();
-	//		AnimatedView.sOnly.Die();
-	//	}
 
 	/**
 	 * Called when app becomes active.
 	 */
 	@Override
-	public void onResume()
+	protected void onResume()
 	{
 		Log.d(TAG, "onResume()");
 		super.onResume();
-
-		//		if(AnimatedView.sOnly == null)
-		new AnimatedView(this);
 
 		// input data
 		mTouching = false;
 		mTouchPos = new XYf();
 
-		// initialize stats
-		mElapsedTime = 0;
-		sSeconds = 0;
-		sFPS = 0;
-
-		//		mRestarting = false;
-
-		// user-provided init code
-		//		InitializeOnce();
+		// restore user settings
+		SharedPreferences tPrefs = getPreferences(0);
+		if(tPrefs.getBoolean("saved", false))
+		{
+			// TODO: restore settings to SettingsDB object in loop
+		}
+		else
+		{
+			// TODO: load SettingsDB with default values
+		}
 
 		Log.d(TAG, "  creating static arrays");
 		ActionElement.Init();
@@ -195,15 +137,65 @@ public class GameProc extends Activity implements Runnable
 
 	/** Called when app is backgrounded, but may still be visible. */
 	@Override
-	public void onPause()
+	protected void onPause()
 	{
 		Log.d(TAG, "onPause()");
 		super.onPause();
+
+		// save user settings
+		SharedPreferences.Editor tEditor = getPreferences(0).edit();
+		// TODO: save user settings in a loop from a static SettingsDB;
+		// each entry is { "name", setting_type, setting_data }.
+		tEditor.putBoolean("saved", true);
+		tEditor.commit();
+
+		// shut down
 		Die();
 		AnimatedView.sOnly.Die();
 		AudioResource.Die(); // stop and free all audio resources
 		SoundEffect.Die(); // free the sound pool
+
+		// clean some up now to avoid latency later
+		Runtime r = Runtime.getRuntime();
+		r.gc();
 	}
+
+	//	/** Called on app shutdown. */
+	@Override
+	protected void onDestroy()
+	{
+		Log.d(TAG, "onDestroy()");
+		super.onDestroy();
+
+		Shutdown();
+	}
+
+	/** Stops the update thread. */
+	void Die()
+	{
+		synchronized(this)
+		{
+			mRunning = false;
+			sUpdateThread = null;
+		}
+	}
+
+	/** Override this in your derived class to make stuff. */
+	public void InitializeOnce()
+	{
+	}
+
+	/** Override this to hook the resume event. */
+	public void InitializeOnResume()
+	{
+	}
+
+	/** Override this to hook the shutdown event. */
+	public void Shutdown()
+	{
+	}
+
+	// game update loop ////////////////////////////////////////////////////////
 
 	/** Thread to run logic updates */
 	@Override
@@ -264,6 +256,8 @@ public class GameProc extends Activity implements Runnable
 		}
 	}
 
+	// runtime stats ///////////////////////////////////////////////////////////
+
 	/** Query performance statistics based on update timing. */
 	// TODO: does this belong here? Move to AnimatedView
 	long FPS()
@@ -283,32 +277,7 @@ public class GameProc extends Activity implements Runnable
 		}
 	}
 
-	/** Stops the update thread. */
-	void Die()
-	{
-		synchronized(this)
-		{
-			mRunning = false;
-			sUpdateThread = null;
-		}
-	}
-
-	/** Override this in your derived class to make stuff. */
-	public void InitializeOnce()
-	{
-	}
-
-	/** Override this to hook the resume event. */
-	public void InitializeOnResume()
-	{
-	}
-
-	/** Override this to hook the shutdown event. */
-	public void Shutdown()
-	{
-	}
-
-	// user input callbacks //
+	// user input callbacks ////////////////////////////////////////////////////
 
 	// TODO: Event callback/interface for listeners; sort on Z?
 	@Override
