@@ -1,3 +1,5 @@
+
+
 package rogue_opcode;
 
 
@@ -19,98 +21,99 @@ import android.content.SharedPreferences.Editor;
  * Below find a complete RogueOp application that implements the Saveable
  * interface.
  * <pre>
-package com.tooleyc.saveable_test;
-
-
-import com.tooleyc.saveable_test.R;
-import com.tooleyc.saveable_test.Saveable.StateManager;
-
-import rogue_opcode.AnimatedView;
-import rogue_opcode.GameProc;
-import rogue_opcode.GraphicResource;
-import rogue_opcode.ScreenElement;
-import rogue_opcode.geometrics.XYZf;
-
-
-public class Saveable_test extends GameProc
-{
-	static final int BASE_WIDTH = 320;
-	static final int BASE_HEIGHT = 480;
-	
-	@Override
-	public void InitializeOnce()
-	{
-		AnimatedView.sOnly.NormailzeResolution(BASE_WIDTH, BASE_HEIGHT);
-		AnimatedView.sOnly.Debug(true);
-	}
-
-	public void Shutdown()
-	{
-		StateManager.Save();
-	}
-
-	@Override
-	public void InitializeOnResume()
-	{
-		if (!StateManager.Load()) {
-			//hmm, couldn't find any state, need to make some
-			StateManager.Add(new SaveableScreenElement(R.drawable.bug, 50));
-			StateManager.Add(new SaveableScreenElement(R.drawable.bug, 100));
-			StateManager.Add(new SaveableScreenElement(R.drawable.bug, 150));
-		}
-	}
-}
-
-
-class SaveableScreenElement extends ScreenElement implements Saveable
-{
-	private static final long serialVersionUID = 1L;
-
-	int mTestVal;
-
-	public SaveableScreenElement()
-	{
-		super(0);
-		mTestVal = 100;
-	}
-
-	public SaveableScreenElement(int pResourceID, int pXPos)
-	{
-		super(pResourceID);
-		mTestVal = 200;
-		
-		mPos.x = pXPos;
-		mPos.y = 250;
-	}
-
-	public String BuildStateString()
-	{
-		return SaveableScreenElement.class.getCanonicalName() + " " + "mPos.x="
-				+ mPos.x + " mPos.y=" + mPos.y;
-	}
-
-	public void LoadState(StateManager pStateManager)
-	{
-		mPos.x = pStateManager.NextFloat();
-		mPos.y = pStateManager.NextFloat();
-
-		mGR = GraphicResource.FindGR(R.drawable.bug);
-	}
-
-	public void Update()
-	{
-		XYZf tXY = new XYZf();
-		tXY.x = mPos.x;
-		tXY.y = mPos.y;
-		
-		if(GameProc.sOnly.Touching())
-		{
-			mPos.y -= .1f;
-		}
-		
-	}
-}
- * </pre>
+ * package com.tooleyc.saveable_test;
+ * 
+ * 
+ * import com.tooleyc.saveable_test.R;
+ * import com.tooleyc.saveable_test.Saveable.StateManager;
+ * 
+ * import rogue_opcode.AnimatedView;
+ * import rogue_opcode.GameProc;
+ * import rogue_opcode.GraphicResource;
+ * import rogue_opcode.ScreenElement;
+ * import rogue_opcode.geometrics.XYZf;
+ * 
+ * 
+ * public class Saveable_test extends GameProc
+ * {
+ * static final int BASE_WIDTH = 320;
+ * static final int BASE_HEIGHT = 480;
+ * 
+ * @Override
+ *           public void InitializeOnce()
+ *           {
+ *           AnimatedView.sOnly.NormailzeResolution(BASE_WIDTH, BASE_HEIGHT);
+ *           AnimatedView.sOnly.Debug(true);
+ *           }
+ * 
+ *           public void Shutdown()
+ *           {
+ *           StateManager.Save();
+ *           }
+ * @Override
+ *           public void InitializeOnResume()
+ *           {
+ *           if (!StateManager.Load()) {
+ *           //hmm, couldn't find any state, need to make some
+ *           StateManager.Add(new SaveableScreenElement(R.drawable.bug, 50));
+ *           StateManager.Add(new SaveableScreenElement(R.drawable.bug, 100));
+ *           StateManager.Add(new SaveableScreenElement(R.drawable.bug, 150));
+ *           }
+ *           }
+ *           }
+ * 
+ * 
+ *           class SaveableScreenElement extends ScreenElement implements
+ *           Saveable
+ *           {
+ *           private static final long serialVersionUID = 1L;
+ * 
+ *           int mTestVal;
+ * 
+ *           public SaveableScreenElement()
+ *           {
+ *           super(0);
+ *           mTestVal = 100;
+ *           }
+ * 
+ *           public SaveableScreenElement(int pResourceID, int pXPos)
+ *           {
+ *           super(pResourceID);
+ *           mTestVal = 200;
+ * 
+ *           mPos.x = pXPos;
+ *           mPos.y = 250;
+ *           }
+ * 
+ *           public String BuildStateString()
+ *           {
+ *           return SaveableScreenElement.class.getCanonicalName() + " " +
+ *           "mPos.x="
+ *           + mPos.x + " mPos.y=" + mPos.y;
+ *           }
+ * 
+ *           public void LoadState(StateManager pStateManager)
+ *           {
+ *           mPos.x = pStateManager.NextFloat();
+ *           mPos.y = pStateManager.NextFloat();
+ * 
+ *           mGR = GraphicResource.FindGR(R.drawable.bug);
+ *           }
+ * 
+ *           public void Update()
+ *           {
+ *           XYZf tXY = new XYZf();
+ *           tXY.x = mPos.x;
+ *           tXY.y = mPos.y;
+ * 
+ *           if(GameProc.sOnly.Touching())
+ *           {
+ *           mPos.y -= .1f;
+ *           }
+ * 
+ *           }
+ *           }
+ *           </pre>
  * 
  * @author Christopher R. Tooley
  * @see StateManager
@@ -156,7 +159,8 @@ public interface Saveable
 		int mParamIndex;
 
 		/**
-		 * Save is a static method that should be called by your application in
+		 * Save() is a static method that should be called by your application
+		 * in
 		 * the Shutdown() method. The Save() method calls the BuildStateString()
 		 * method on all of the instances that have implemented the Saveable
 		 * interface and have been registered via the Add() method. The
@@ -198,17 +202,32 @@ public interface Saveable
 			SharedPreferences tPrefs = GameProc.sOnly.getSharedPreferences(
 					"GameState1", Context.MODE_PRIVATE);
 
-			String[] tStates = tPrefs.getString("SavedState", "empty").split(
-					"\n");
-			if(tStates[0].equals("empty"))
+			String tAllStates = tPrefs.getString("SavedState", "");
+			
+			if (tAllStates.length() == 0)
 				return false;
-
+			
+			String[] tStates = tAllStates.split("\n");
+			
 			for(String tState : tStates)
 			{
 				StateManager.newInstance(tState);
 			}
 
 			return true;
+		}
+
+		/**
+		 * Clear() is a static method that can be called to erase the persisted
+		 * state information from the shared storage.
+		 */
+		public static void Clear()
+		{
+			SharedPreferences tPrefs = GameProc.sOnly.getSharedPreferences(
+					"GameState1", Context.MODE_PRIVATE);
+			Editor tPrefsEditor = tPrefs.edit();
+			tPrefsEditor.remove("SavedState");
+			tPrefsEditor.commit();
 		}
 
 		//Called internally by Load() to create a new instance of a class from persisted parameter data
@@ -284,7 +303,8 @@ public interface Saveable
 		}
 
 		/**
-		 * NextFloat() is used by your implementation of the LoadState() method to
+		 * NextFloat() is used by your implementation of the LoadState() method
+		 * to
 		 * retrieve the next parameter as a Float value.
 		 * 
 		 * @return the parsed Float value of the current parameter in the
@@ -303,7 +323,8 @@ public interface Saveable
 		}
 
 		/**
-		 * NextString() is used by your implementation of the LoadState() method to
+		 * NextString() is used by your implementation of the LoadState() method
+		 * to
 		 * retrieve the next parameter as a String value.
 		 * 
 		 * @return the String value of the current parameter in the
