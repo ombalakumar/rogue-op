@@ -44,6 +44,9 @@ public class GameProc extends Activity implements Runnable
 	protected boolean mTouching;
 	protected XYf mTouchPos;
 
+	protected boolean mMousing;
+	protected XYf mMousePos;
+
 	protected boolean mRunning;
 	protected boolean mRestarting;
 	protected boolean mExiting;
@@ -106,6 +109,9 @@ public class GameProc extends Activity implements Runnable
 		// input data
 		mTouching = false;
 		mTouchPos = new XYf();
+		
+		mMousing = false;
+		mMousePos = new XYf();
 
 		// restore user settings
 		SharedPreferences tPrefs = getPreferences(0);
@@ -142,6 +148,8 @@ public class GameProc extends Activity implements Runnable
 		Log.d(TAG, "onPause()");
 		super.onPause();
 
+		Shutdown();
+
 		// save user settings
 		SharedPreferences.Editor tEditor = getPreferences(0).edit();
 		// TODO: save user settings in a loop from a static SettingsDB;
@@ -161,14 +169,14 @@ public class GameProc extends Activity implements Runnable
 	}
 
 	//	/** Called on app shutdown. */
-	@Override
-	protected void onDestroy()
+	//@Override
+/*	protected void onDestroy()
 	{
 		Log.d(TAG, "onDestroy()");
 		super.onDestroy();
 
 		Shutdown();
-	}
+	}*/
 
 	/** Stops the update thread. */
 	void Die()
@@ -278,6 +286,26 @@ public class GameProc extends Activity implements Runnable
 	}
 
 	// user input callbacks ////////////////////////////////////////////////////
+
+	@Override
+	public boolean onTrackballEvent(MotionEvent pEvent) {
+		mMousePos.x = (int) (pEvent.getRawX() * 100);
+		mMousePos.y = (int) (pEvent.getRawY() * 100);
+
+		mMousing = true;
+		return true;
+	}
+
+	public boolean Mousing()
+	{
+		return mMousing;
+	}
+
+	public XYf MousePos()
+	{
+		mMousing = false;
+		return mMousePos;
+	}
 
 	// TODO: Event callback/interface for listeners; sort on Z?
 	@Override

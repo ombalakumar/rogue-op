@@ -9,7 +9,7 @@
 //
 // Formatting:
 // 80 cols ; tabwidth 4
-////////////////////////////////////////////////////////////////////////////////
+// //////////////////////////////////////////////////////////////////////////////
 
 
 package rogue_opcode;
@@ -32,6 +32,8 @@ public class GraphicResource implements Serializable
 
 	protected static Map<Integer, GraphicResource> sAllGRs = new HashMap<Integer, GraphicResource>();
 
+	protected static int sUID = 1000; 
+
 	public Bitmap mImage;
 	public int mResID;
 
@@ -52,13 +54,26 @@ public class GraphicResource implements Serializable
 	/**
 	 * Construct a {@code GraphicResource} and load the specified image
 	 * resource.
-	 *
+	 * 
 	 * @param pResID the image's resource ID.
 	 */
 	public GraphicResource(int pResID)
 	{
 		mResID = pResID;
 		load(pResID);
+	}
+
+	/**
+	 * Construct a {@code GraphicResource} from an existing bitmap.
+	 * 
+	 * @param pBitmap the Bitmap to clone.
+	 */
+	public GraphicResource(Bitmap pBitmap)
+	{
+		mResID = sUID;
+		mImage = Bitmap.createBitmap(pBitmap);
+		sAllGRs.put(mResID, this);
+		sUID++;
 	}
 
 	protected void load(int pResourceID)
@@ -128,7 +143,7 @@ public class GraphicResource implements Serializable
 	}
 
 	private void readObject(ObjectInputStream pIn) throws IOException,
-	ClassNotFoundException
+			ClassNotFoundException
 	{
 		pIn.defaultReadObject(); // read everything except the Bitmap field
 		load(mResID); // loads the image resource
