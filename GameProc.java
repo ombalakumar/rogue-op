@@ -289,8 +289,8 @@ public class GameProc extends Activity implements Runnable
 				|| tAction == MotionEvent.ACTION_MOVE)
 		{
 			mTouching = true;
-			mTouchPos.x = pEvent.getX();
-			mTouchPos.y = pEvent.getY();
+			mTouchPos.x = pEvent.getX() / AnimatedView.sOnly.mPreScaler;
+			mTouchPos.y = pEvent.getY() / AnimatedView.sOnly.mPreScaler;
 		}
 		else if(pEvent.getAction() == MotionEvent.ACTION_UP)
 		{

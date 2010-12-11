@@ -246,11 +246,12 @@ public class ScreenElement extends ActionElement
 	public void Draw()
 	{
 		Canvas tCanvas = AnimatedView.sCurrentCanvas;
+		float tX = mPos.x * AnimatedView.sOnly.mPreScaler;
+		float tY = mPos.y * AnimatedView.sOnly.mPreScaler;
 		if(mGR != null)
-			tCanvas.drawBitmap(mGR.mImage, mPos.x, mPos.y, null);
+			tCanvas.drawBitmap(mGR.mImage, tX, tY, null);
 		if(mText != null && mText.length() > 0)
-			tCanvas.drawText(mText, mPos.x, mPos.y,
-					AnimatedView.sOnly.mPaint);
+			tCanvas.drawText(mText, tX, tY, AnimatedView.sOnly.mPaint);
 	}
 }
 
