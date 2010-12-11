@@ -115,7 +115,7 @@ class SaveableScreenElement extends ScreenElement implements Saveable
  * @author Christopher R. Tooley
  * @see StateManager
  */
-interface Saveable
+public interface Saveable
 {
 	static Set<Saveable> mAllSaveables = new HashSet<Saveable>();
 
