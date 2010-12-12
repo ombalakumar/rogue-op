@@ -217,6 +217,18 @@ public interface Saveable
 			return true;
 		}
 
+		public static boolean SavedStateExists() {
+			SharedPreferences tPrefs = GameProc.sOnly.getSharedPreferences(
+					"GameState1", Context.MODE_PRIVATE);
+
+			String tAllStates = tPrefs.getString("SavedState", "");
+			
+			if (tAllStates.length() == 0)
+				return false;
+			
+			return true;
+		}
+		
 		/**
 		 * Clear() is a static method that can be called to erase the persisted
 		 * state information from the shared storage.
