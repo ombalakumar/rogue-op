@@ -248,8 +248,14 @@ public class ScreenElement extends ActionElement
 		Canvas tCanvas = AnimatedView.sCurrentCanvas;
 		float tX = mPos.x * AnimatedView.sOnly.mPreScaler;
 		float tY = mPos.y * AnimatedView.sOnly.mPreScaler;
-		if(mGR != null)
+		if(mGR != null) {
+			if (mDrawCentered)
+			{
+				tX -= ((mGR.PhysicalWidth()) / 2);
+				tY -= ((mGR.PhysicalHeight()) / 2);
+			}
 			tCanvas.drawBitmap(mGR.mImage, tX, tY, null);
+		}
 		if(mText != null && mText.length() > 0)
 			tCanvas.drawText(mText, tX, tY, AnimatedView.sOnly.mPaint);
 	}
