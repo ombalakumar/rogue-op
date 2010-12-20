@@ -14,22 +14,21 @@
 
 package rogue_opcode;
 
-import java.io.Serializable;
 import java.util.HashMap;
 
+import rogue_opcode.soundy.FXR;
 import rogue_opcode.soundy.MusicTrack;
 import rogue_opcode.soundy.SoundEffect;
+import rogue_opcode.soundy.Soundy;
 
 
 /**
- * Defines a common interface for audio objects.
+ * Defines a common interface for simple audio objects.
  *
  * @author Brigham Toskin
  */
-public abstract class AudioResource implements Serializable
+public abstract class AudioResource
 {
-	private static final long serialVersionUID = -4656188223786705530L;
-
 	/**
 	 * Maps {@code resource} IDs to {@code AudioResource}s. <b>Note: This may
 	 * be inefficient with memory for some operations; use carefully!</b>
@@ -44,7 +43,22 @@ public abstract class AudioResource implements Serializable
 	protected float mGain;
 	protected float mPan;
 
-	// c'tor, etc. //
+	// factory functionality ///////////////////////////////////////////////////
+
+	/**
+	 * Enumeration of available audio types.
+	 */
+	public enum AudioType
+	{
+		/** Indicates a short PCM audio clip suitable for sound effects. */
+		EFFECT,
+		/** Indicates a longer PCM audio clip suitable for in game music. */
+		MUSIC,
+		/** Indicates a synthesized audio clip from SFXR. */
+		SYNTH_EFFECT,
+		/** Indicates a synthesized 4-track song. */
+		SYNTH_MUSIC
+	}
 
 	/**
 	 * Constructs an <code>AudioResource</code> instance, defaulting to the more
@@ -54,30 +68,50 @@ public abstract class AudioResource implements Serializable
 	 * @return a newly constructed specific instance.
 	 * @see AudioResource#ICanHas(int, boolean)
 	 */
+	// XXX: does this still make sense?
 	public static AudioResource ICanHas(int pResID)
 	{
-		return ICanHas(pResID, true);
+		return ICanHas(pResID, AudioType.MUSIC);
 	}
 
 	/**
 	 * Constructs an <code>AudioResource</code> instance based on the hint
-	 * parameter <code>pLongPlayback</code>. A limitation of the Android audio
+	 * parameter <code>pType</code>. A limitation of the Android audio
 	 * APIs is that the underlying <code>SoundPool</code> objects are ill suited
 	 * to playing audio samples that are longer than just a few seconds. As an
 	 * alternative, this method can instantiate an implementation that utilizes
 	 * <code>MediaPlayer</code> on the back end; this allows for longer audio
 	 * clips at the expense of more computational resources.
-	 * 
+	 *
 	 * @param pResID audio resource to load.
-	 * @param pLongPlayback hint as to whether this file is longer than a few
-	 *        seconds; this parameter affects which underlying implementation is
-	 *        constructed.
+	 * @param pType hint as to the type and characteristics of audio file we
+	 *        wish to load; this parameter affects which underlying
+	 *        implementation is constructed.
 	 * @return a newly constructed specific instance.
 	 * @see AudioResource#ICanHas(int)
+	 * @see AudioResource.AudioType
 	 */
-	public static AudioResource ICanHas(int pResID, boolean pLongPlayback)
+	public static AudioResource ICanHas(int pResID, AudioType pType)
 	{
-		return pLongPlayback ? new MusicTrack(pResID) : new SoundEffect(pResID);
+		AudioResource tAudio;
+		switch(pType)
+		{
+		case EFFECT:
+			tAudio = new SoundEffect(pResID);
+			break;
+		case MUSIC:
+			tAudio = new MusicTrack(pResID);
+			break;
+		case SYNTH_EFFECT:
+			tAudio = new FXR(pResID);
+			break;
+		case SYNTH_MUSIC:
+			tAudio = new Soundy(pResID);
+			break;
+		default:
+			tAudio = null;
+		}
+		return tAudio;
 	}
 
 	protected AudioResource(int pResID)

@@ -1,5 +1,5 @@
 // Soundy.java
-// Soundy class
+// Soundy synthesizer framework
 //
 // Copyright ©2010 Brigham Toskin
 // This software is part of the Rogue-Opcode game framework. It is distributable
@@ -21,24 +21,21 @@ import android.media.AudioTrack;
 /**
  * Soundy has up to 4 WaveSources, which will be instances of WaveTables or
  * WaveOscilators.
- * 
+ *
  * @author Brigham Toskin
  */
 public class Soundy extends AudioResource
 {
-	private static final long serialVersionUID = 8555217517873459563L;
-
 	// These are the audio player guts.
-	// AudioTracks should be generated and played in static mode for SFX.
-	// They should be generated on the fly and played in dynamic mode for music.
-	protected AudioTrack pChannel1;
-	protected AudioTrack pChannel2;
-	protected AudioTrack pChannel3;
-	protected AudioTrack pChannel4;
-	protected WaveSource pSynth1;
-	protected WaveSource pSynth2;
-	protected WaveSource pSynth3;
-	protected WaveSource pSynth4;
+	// AudioTracks should be generated on the fly and played in dynamic mode.
+	protected AudioTrack mChannel1;
+	protected AudioTrack mChannel2;
+	protected AudioTrack mChannel3;
+	protected AudioTrack mChannel4;
+	protected WaveSource mSynth1, mLFO1;
+	protected WaveSource mSynth2, mLFO2;
+	protected WaveSource mSynth3, mLFO3;
+	protected WaveSource mSynth4, mLFO4;
 
 	/**
 	 * @param pResID
@@ -46,7 +43,7 @@ public class Soundy extends AudioResource
 	public Soundy(int pResID)
 	{
 		super(pResID);
-		// TODO Auto-generated constructor stub
+		// TODO: allocate the above audio classes
 	}
 
 	/**

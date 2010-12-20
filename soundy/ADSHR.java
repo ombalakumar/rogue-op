@@ -34,29 +34,33 @@ package rogue_opcode.soundy;
  */
 public class ADSHR
 {
-	public int A, D, R;
-	public double S;
+	public int A, D, H, R;
+	public float S;
 	public float mAmp;
 	public float mFreq;
+	public int mElapsed;
 	public EnvelopeState mState;
 
-	ADSHR()
+	public ADSHR()
 	{
-		A = D = R = 0;
-		S = 0.0;
+		A = D = H = R = mElapsed = 0;
+		S = 0.0f;
 		mAmp = mFreq = 0;
 		mState = EnvelopeState.OFF;
 	}
 
-	ADSHR(int pA, int pD, float pS, int pR)
+	public ADSHR(int pA, int pD, float pS, int pH, int pR)
 	{
 		A = pA;
 		D = pD;
 		S = pS;
+		H = pH;
 		R = pR;
-		mAmp = mFreq = 0;
+		mAmp = mFreq = mElapsed = 0;
 		mState = EnvelopeState.OFF;
 	}
+
+	// TODO: on/off method with a single calculate?
 
 	public float Calculate(float pFreq, boolean pOn)
 	{
@@ -82,7 +86,7 @@ public class ADSHR
 			if(tState == EnvelopeState.DECAY)
 			{
 				if(mAmp <= S)
-					mState = EnvelopeState.SUSTAIN;
+					mState = EnvelopeState.HOLD;
 				else
 					mAmp -= (1.0 - S) / D;
 			}
@@ -109,10 +113,64 @@ public class ADSHR
 		return (mFreq = pFreq);
 	}
 
+	public float Calculate(float pFreq)
+	{
+		EnvelopeState tState = mState;
+
+		// reset envelope on pFreq change
+		if(pFreq != mFreq)
+		{
+			mElapsed = 0;
+			mState = EnvelopeState.ATTACK;
+		}
+
+		if(tState == EnvelopeState.ATTACK)
+		{
+			if(mAmp >= 1.0)
+				mState = EnvelopeState.DECAY;
+			else
+				mAmp += 1.0 / A;
+		}
+
+		if(tState == EnvelopeState.DECAY)
+		{
+			if(mAmp < S)
+			{
+				mAmp = S;
+				mState = EnvelopeState.HOLD;
+			}
+			else
+				mAmp -= (1.0 - S) / D;
+		}
+
+		if(tState == EnvelopeState.HOLD)
+		{
+			if(mElapsed++ == H - 1)
+			{
+				mElapsed = 0;
+				mState = EnvelopeState.RELEASE;
+			}
+		}
+
+		if(tState == EnvelopeState.RELEASE)
+		{
+			if(mAmp <= 0.0001f)
+			{
+				mAmp = 0.0f;
+				mState = EnvelopeState.OFF;
+				pFreq = 0; // signal the gen functions to shortcircuit 0's
+			}
+			else
+				mAmp -= S / R;
+		}
+
+		return (mFreq = pFreq);
+	}
+
 	// inner types and classes /////////////////////////////////////////////////
 
 	public enum EnvelopeState
 	{
-		OFF, ATTACK, DECAY, SUSTAIN, RELEASE
+		OFF, ATTACK, DECAY, HOLD, RELEASE
 	}
 }
