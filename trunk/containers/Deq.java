@@ -24,7 +24,7 @@ package rogue_opcode.containers;
  * ask for elements -1 or 17, we would get:
  * <code><ol><li />00001111 & 11111111 = 00001111 (data[-1] => data[15])
  * <li />00001111 & 00010001 = 00000001 (data[17] => data[1])</ol></code>
- * 
+ *
  * @param <E> Generic storage type parameter.
  * @see rogue_opcode.containers.Container
  * @author Brigham Toskin
@@ -65,7 +65,7 @@ public class Deq<E> extends Container<E>
 	 */
 	@Override
 	@SuppressWarnings("unchecked")
-	public void Reserve(int pCount) throws Exception
+	public void Reserve(int pCount) //throws Exception
 	{
 		// shortcut for empty containers
 		if(data == null || size == 0)
@@ -124,7 +124,7 @@ public class Deq<E> extends Container<E>
 	 * @see rogue_opcode.containers.Container#At(int)
 	 */
 	@Override
-	public E At(int pIndex) throws Exception
+	public E At(int pIndex) //throws Exception
 	{
 		validate_index(pIndex);
 		int tIndex = head + pIndex;
@@ -135,7 +135,7 @@ public class Deq<E> extends Container<E>
 	 * @see rogue_opcode.containers.Container#First()
 	 */
 	@Override
-	public E First() throws Exception
+	public E First() //throws Exception
 	{
 		validate_nonempty();
 		return data[head];
@@ -145,7 +145,7 @@ public class Deq<E> extends Container<E>
 	 * @see rogue_opcode.containers.Container#Last()
 	 */
 	@Override
-	public E Last() throws Exception
+	public E Last() //throws Exception
 	{
 		validate_nonempty();
 		return data[tail-1];
@@ -214,7 +214,7 @@ public class Deq<E> extends Container<E>
 	 */
 	// TODO: optimize to copy down shorter partition
 	@Override
-	public void Remove(int pIndex) throws Exception // overload for special case in circular queue
+	public void Remove(int pIndex) //throws Exception // overload for special case in circular queue
 	{
 		int tIndex = (pIndex + head) & mask;
 
