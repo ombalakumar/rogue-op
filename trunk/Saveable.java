@@ -243,6 +243,7 @@ public interface Saveable
 		}
 
 		//Called internally by Load() to create a new instance of a class from persisted parameter data
+		@SuppressWarnings("unchecked")
 		private static Object newInstance(String pSavedStateString)
 		{
 			if(pSavedStateString == null)

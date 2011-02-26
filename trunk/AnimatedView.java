@@ -22,6 +22,7 @@ import android.graphics.Color;
 import android.graphics.Paint;
 import android.util.DisplayMetrics;
 import android.util.Log;
+import android.view.KeyEvent;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 
@@ -57,8 +58,12 @@ public class AnimatedView
 
 	// debug stats
 	protected Paint mPaint;
+	//TODO - standardize on when to use static member vars - should mDebugString1 be accessed via sOnly or directly as a static?
+	//either is fine but we should do it one way or another - or am I missing something here?
 	protected static int sFramesDrawn;
 	protected static boolean sDebug;
+	public String mDebugString1;
+	public String mDebugString2;
 
 	boolean mRunning;
 
@@ -75,6 +80,9 @@ public class AnimatedView
 		mPaint.setColor(Color.WHITE);
 		sFramesDrawn = 0;
 		sDebug = false;
+		
+		mDebugString1 = new String();
+		mDebugString2 = new String();
 
 		// init screen/rendering
 		mHolder = getHolder();
@@ -87,8 +95,26 @@ public class AnimatedView
 		GameProc.sOnly.getWindowManager().getDefaultDisplay().getMetrics(tDM);
 		mScreenWidth = tDM.widthPixels;
 		mScreenHeight = tDM.heightPixels;
+		
+		setFocusable(true);
+		setFocusableInTouchMode(true);
 	}
-
+	
+	@Override
+	public boolean onKeyDown(int pKeyCode, KeyEvent pEvent)  {
+		GameProc.sOnly.mCurrentKey = pKeyCode;
+		GameProc.sOnly.mKeys[pKeyCode] = true;
+		
+		return true;
+	}
+	
+	@Override
+	public boolean onKeyUp(int pKeyCode, KeyEvent pEvent)  {
+		GameProc.sOnly.mKeys[pKeyCode] = false;
+		
+		return true;
+	}
+	
 	// screen and drawing properties ///////////////////////////////////////////
 
 	/**
@@ -261,12 +287,15 @@ public class AnimatedView
 			}
 		}
 
+		
 		// draw stats
 		if(sDebug)
 		{
 			tCanvas.drawText("Time: " + GameProc.sOnly.Seconds(), 10, 10, mPaint);
-			tCanvas.drawText("FPS:  " + GameProc.sOnly.FPS(), 10, 20, mPaint);
-		}
+			tCanvas.drawText("FPS:  " + GameProc.sOnly.FPS(), 10, 22, mPaint);
+			tCanvas.drawText("#1:  " + mDebugString1, 10, 34, mPaint);
+			tCanvas.drawText("#2:  " + mDebugString2, 10, 46, mPaint);
+}
 		sCurrentCanvas = null;
 		mHolder.unlockCanvasAndPost(tCanvas);
 	}
