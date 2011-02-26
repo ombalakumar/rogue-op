@@ -16,7 +16,7 @@ package rogue_opcode;
 
 
 import rogue_opcode.geometrics.XYf;
-// import rogue_opcode.soundy.SoundEffect;
+import rogue_opcode.soundy.SoundEffect;
 import android.app.Activity;
 import android.content.SharedPreferences;
 import android.os.Bundle;
@@ -137,7 +137,7 @@ public class GameProc extends Activity implements Runnable, OnGestureListener,
 		Log.d(TAG, "  creating static arrays");
 		ActionElement.Init();
 		ScreenElement.Init();
-		//SoundEffect.Init();
+		SoundEffect.Init();
 
 		// user initialization code
 		InitializeOnResume();
@@ -173,8 +173,8 @@ public class GameProc extends Activity implements Runnable, OnGestureListener,
 		// shut down
 		Die();
 		AnimatedView.sOnly.Die();
-		//AudioResource.Die(); // stop and free all audio resources
-		//SoundEffect.Die(); // free the sound pool
+		AudioResource.Die(); // stop and free all audio resources
+		SoundEffect.Die(); // free the sound pool
 
 		// clean some up now to avoid latency later
 		Runtime r = Runtime.getRuntime();
