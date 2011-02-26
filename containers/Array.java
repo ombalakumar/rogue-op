@@ -30,7 +30,7 @@ public class Array<E> extends Container<E>
 	/** Default constructor preallocates space for up to 32 elements.
 	 * @throws Exception on allocation failure.
 	 */
-	public Array() throws Exception
+	public Array() //throws Exception
 	{
 		super(32);
 	}
@@ -39,7 +39,7 @@ public class Array<E> extends Container<E>
 	 * @param pCapacity number of elements to allocate space for.
 	 * @throws Exception on allocation failure.
 	 */
-	public Array(int pCapacity) throws Exception
+	public Array(int pCapacity) //throws Exception
 	{
 		super(pCapacity);
 	}
@@ -51,7 +51,7 @@ public class Array<E> extends Container<E>
 	 * @see rogue_opcode.containers.Container#First()
 	 */
 	@Override
-	public E First() throws Exception
+	public E First() //throws Exception
 	{
 		validate_nonempty();
 		return data[0];
@@ -62,7 +62,7 @@ public class Array<E> extends Container<E>
 	 * @see rogue_opcode.containers.Container#Last()
 	 */
 	@Override
-	public E Last() throws Exception
+	public E Last() //throws Exception
 	{
 		validate_nonempty();
 		return data[size - 1];
@@ -74,7 +74,7 @@ public class Array<E> extends Container<E>
 	 * @see rogue_opcode.containers.Container#at(int)
 	 */
 	@Override
-	public E At(int pIndex) throws Exception
+	public E At(int pIndex) //throws Exception
 	{
 		validate_index(pIndex);
 		return data[pIndex];
@@ -85,7 +85,7 @@ public class Array<E> extends Container<E>
 	 * @param pVal the item to append.
 	 * @throws Exception on allocation failure.
 	 */
-	public void Append(E pVal) throws Exception
+	public void Append(E pVal) //throws Exception
 	{
 		resize_inc();
 		data[size-1] = pVal;

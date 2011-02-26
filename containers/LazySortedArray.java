@@ -17,9 +17,6 @@ package rogue_opcode.containers;
 import java.util.Arrays;
 import java.util.Comparator;
 
-import rogue_opcode.GameProc;
-import android.util.Log;
-
 
 /**
  * {@code LazySortedArray} is an efficient, array-based, sorted structure. It is
@@ -76,7 +73,7 @@ public class LazySortedArray<E> extends Array<E>
 	 * @see rogue_opcode.containers.Array#Append(java.lang.Object)
 	 */
 	@Override
-	public void Append(E pVal) throws Exception
+	public void Append(E pVal) //throws Exception
 	{
 		synchronized(this)
 		{
@@ -105,7 +102,7 @@ public class LazySortedArray<E> extends Array<E>
 	 * @see rogue_opcode.containers.Array#First()
 	 */
 	@Override
-	public E First() throws Exception
+	public E First() //throws Exception
 	{
 		SortIfDirty();
 		return super.First();
@@ -117,7 +114,7 @@ public class LazySortedArray<E> extends Array<E>
 	 * @see rogue_opcode.containers.Array#Last()
 	 */
 	@Override
-	public E Last() throws Exception
+	public E Last() //throws Exception
 	{
 		SortIfDirty();
 		return super.Last();
@@ -132,7 +129,7 @@ public class LazySortedArray<E> extends Array<E>
 	 * @see rogue_opcode.containers.Array#At(int)
 	 */
 	@Override
-	public E At(int pIndex) throws Exception
+	public E At(int pIndex) //throws Exception
 	{
 		mDirty = true;
 		return super.At(pIndex);
@@ -149,13 +146,37 @@ public class LazySortedArray<E> extends Array<E>
 		{
 			if(size < 1)
 				return;
+			// place min at head
+			/*
+			 * int tMinIndex = 0;
+			 * for(int i = 1; i < data.length; i++)
+			 * {
+			 * if(mComparator.compare(data[tMinIndex], data[i]) > 0)
+			 * tMinIndex = i;
+			 * }
+			 * if(tMinIndex > 0)
+			 * {
+			 * E tVal = data[0];
+			 * data[0] = data[tMinIndex];
+			 * data[tMinIndex] = tVal;
+			 * }
+			 *
+			 * // sort remaining array
+			 * for(int i = 2; i <= data.length; i++)
+			 * {
+			 * E tVal = data[i];
+			 * int j;
+			 * for(j = i; mComparator.compare(tVal, data[j - 1]) < 0; j--)
+			 * data[j] = data[j - 1];
+			 * data[j] = tVal;
+			 * }
+			 */
 			try
 			{
-				Arrays.sort(data, 0, size, mComparator);
+				Arrays.sort(data, mComparator);
 			}
 			catch(Exception e)
 			{
-				Log.d(GameProc.TAG, "(sorting exception)");
 			}
 			mDirty = false;
 		}

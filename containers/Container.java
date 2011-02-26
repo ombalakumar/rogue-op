@@ -21,7 +21,7 @@ import java.io.Serializable;
  * @see java.lang.Exception
  */
 @SuppressWarnings("serial")
-class ContainerError extends Exception
+class ContainerError extends RuntimeException
 {
 	/** Constructs an {@code Exception} with a friendly error message, which
 	 * includes the name of the calling method two frames back. This is because
@@ -79,7 +79,7 @@ public abstract class Container<E> implements Serializable
 	public int size;
 	public E[] data;
 
-	public Container(int pCapacity) throws Exception
+	public Container(int pCapacity)// throws Exception
 	{
 		//		Clear();
 		Reserve(pCapacity);
@@ -93,7 +93,7 @@ public abstract class Container<E> implements Serializable
 	}
 
 	@SuppressWarnings("unchecked")
-	public void Reserve(int pCount) throws Exception
+	public void Reserve(int pCount) //throws Exception
 	{
 		E[] tData = data; // grab a local ref
 
@@ -127,7 +127,7 @@ public abstract class Container<E> implements Serializable
 	 * @param pIndex index of element to remove.
 	 * @throws Exception on invalid index.
 	 */
-	public void Remove(int pIndex) throws Exception
+	public void Remove(int pIndex) //throws Exception
 	{
 		validate_index(pIndex);
 		E[] tData = data; // grab local ref
@@ -153,43 +153,49 @@ public abstract class Container<E> implements Serializable
 
 	// element access aliases //////////////////////////////////////////////////
 
-	public abstract E First() throws Exception;
-	public abstract E Last() throws Exception;
-	public abstract E At(int pIndex) throws Exception;
+	public abstract E First(); //throws Exception;
+
+	public abstract E Last(); //throws Exception;
+
+	public abstract E At(int pIndex); //throws Exception;
 
 	// error checking and memory helpers ///////////////////////////////////////
 
-	protected static void validate_pointer(Object pRef) throws Exception
+	protected static void validate_pointer(Object pRef) //throws Exception
 	{
 		if(pRef == null)
 			throw new ContainerError("Dereferencing null pointer.",
 					new Exception());
 	}
-	protected static void validate_alloc(Object pRef) throws Exception
+
+	protected static void validate_alloc(Object pRef) //throws Exception
 	{
 		if(pRef == null)
 			throw new ContainerError("Allocation failed.", new Exception());
 	}
-	protected void validate_nonempty() throws Exception
+
+	protected void validate_nonempty() //throws Exception
 	{
 		if(size < 1)
 			throw new ContainerError("Accessing empty container.",
 					new Exception());
 	}
-	protected void validate_index(int pIndex) throws Exception
+
+	protected void validate_index(int pIndex) //throws Exception
 	{
 		if(pIndex >= size)
 			throw new ContainerError("Index out of bounds.", new Exception());
 	}
 
-	protected void resize_inc() throws Exception
+	protected void resize_inc() //throws Exception
 	{
 		int tLen = data.length;
 		if(size == tLen)
 			Reserve(tLen << 1);
 		size++;
 	}
-	protected void resize_add(int count) throws Exception
+
+	protected void resize_add(int count) //throws Exception
 	{
 		if(size + count > data.length)
 		{
