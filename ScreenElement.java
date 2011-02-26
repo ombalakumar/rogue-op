@@ -33,14 +33,17 @@ import android.util.Log;
 public class ScreenElement extends ActionElement
 {
 	private static final long serialVersionUID = 8512900123394987036L;
-
+	
 	protected GraphicResource mGR;
 
 	public XYZf mPos;
 	public XYZf mVel;
 
 	protected boolean mVisible;
+	
 	public boolean mSelfGuided;
+	XYf mSelfGuidedDestination;
+	float mSelfGuidedSpeed;
 
 	protected String mText;
 
@@ -122,6 +125,8 @@ public class ScreenElement extends ActionElement
 		mDrawCentered = true;
 		mVisible = true;
 		mSelfGuided = false;
+		
+		mSelfGuidedDestination = new XYf();
 
 		try
 		{
@@ -152,6 +157,11 @@ public class ScreenElement extends ActionElement
 		return mVisible;
 	}
 
+	public void Visible(boolean pVisible)
+	{
+		mVisible = pVisible;
+	}
+
 	public void SetCurrentGR(int pResourceID)
 	{
 		mGR = GraphicResource.FindGR(pResourceID);
@@ -162,15 +172,19 @@ public class ScreenElement extends ActionElement
 		return mGR;
 	}
 
-	public Boolean WithinRange(ScreenElement pTargetSE, int pRadius)
+	public Boolean WithinRange(ScreenElement pTargetSE, float pRadius)
 	{
-		if( (mPos.x < (pTargetSE.mPos.x + pRadius)) &&
-				(mPos.x > (pTargetSE.mPos.x - pRadius)) &&
-				(mPos.y < (pTargetSE.mPos.y + pRadius)) &&
-				(mPos.y > (pTargetSE.mPos.y - pRadius)) )
+		return WithinRange(pTargetSE.mPos, pRadius);
+	}
+
+	public Boolean WithinRange(XYf pTarget, float pRadius)
+	{
+		if( (mPos.x < (pTarget.x + pRadius)) &&
+				(mPos.x > (pTarget.x - pRadius)) &&
+				(mPos.y < (pTarget.y + pRadius)) &&
+				(mPos.y > (pTarget.y - pRadius)) )
 			return true;
 		return false;
-
 	}
 
 	public void DrawCentered(boolean pDrawCentered)
@@ -225,6 +239,15 @@ public class ScreenElement extends ActionElement
 		sAllSEs.mDirty = true;
 	}
 
+	public void moveTo(float pSpeed, XYf pDestination) {
+		mSelfGuided = true;
+		
+		mSelfGuidedDestination.x = pDestination.x;
+		mSelfGuidedDestination.y = pDestination.y;
+		
+		mSelfGuidedSpeed = pSpeed;
+	}
+	
 	/**
 	 * AnimatedView will call this repeatedly during the program's lifetime
 	 * automatically. Override in your derived class to do something exciting.
@@ -234,8 +257,40 @@ public class ScreenElement extends ActionElement
 	@Override
 	public void Update()
 	{
-		if(mSelfGuided)
-			mPos.add(mVel);
+		if(mSelfGuided) {
+			//mPos.add(mVel);
+			
+			//TODO - hmm, Brigdog took this shit and polished it into 3 lines of code.  Use that instead.
+			float a = mSelfGuidedDestination.x - mPos.x;
+			float b = mSelfGuidedDestination.y - mPos.y;
+			
+			float xFactor;
+			float yFactor;
+			
+			if (Math.abs(a) < Math.abs(b)) {
+				xFactor = Math.abs(a / b);
+				yFactor = 1 - xFactor;
+			} else {
+				yFactor = Math.abs(b / a);
+				xFactor = 1 - yFactor;
+			}
+			
+			
+			if (a < 0)
+				xFactor *= -1;
+			
+			if (b < 0)
+				yFactor *= -1;
+			
+			mPos.x +=( mSelfGuidedSpeed * xFactor);
+			mPos.y +=( mSelfGuidedSpeed * yFactor);
+			
+			if (WithinRange(mSelfGuidedDestination, mSelfGuidedSpeed)) {
+				mPos.x = mSelfGuidedDestination.x;
+				mPos.y = mSelfGuidedDestination.y;
+				mSelfGuided = false;
+			}
+		}
 	}
 
 	/**

@@ -32,7 +32,7 @@ public class GraphicResource implements Serializable
 
 	protected static Map<Integer, GraphicResource> sAllGRs = new HashMap<Integer, GraphicResource>();
 
-	protected static int sUID = 1000; 
+	protected static int sUID = 1000;
 
 	public Bitmap mImage;
 	public int mResID;
@@ -72,6 +72,14 @@ public class GraphicResource implements Serializable
 	{
 		mResID = sUID;
 		mImage = Bitmap.createBitmap(pBitmap);
+		mBaseWidth = mImage.getWidth();
+		mBaseHeight = mImage.getHeight();
+		//TODO - I'm not sure about the filter here - in the case of Congo Bongo 
+		//we definitely don't want it, but in sudoku we do.  I'd make it a parameter
+		//but I'd like to keep parameters like this to a minimum.
+		mImage = Bitmap.createScaledBitmap(mImage,
+				(int)(mBaseWidth * AnimatedView.sOnly.mPreScaler),
+				(int)(mBaseHeight * AnimatedView.sOnly.mPreScaler), true);
 		sAllGRs.put(mResID, this);
 		sUID++;
 	}
@@ -89,7 +97,7 @@ public class GraphicResource implements Serializable
 		{
 			mImage = Bitmap.createScaledBitmap(mImage,
 					(int)(mBaseWidth * AnimatedView.sOnly.mPreScaler),
-					(int)(mBaseHeight * AnimatedView.sOnly.mPreScaler), false);
+					(int)(mBaseHeight * AnimatedView.sOnly.mPreScaler), true);
 		}
 
 		// store image
@@ -149,3 +157,4 @@ public class GraphicResource implements Serializable
 		load(mResID); // loads the image resource
 	}
 }
+	
