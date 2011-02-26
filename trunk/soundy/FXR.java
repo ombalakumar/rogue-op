@@ -1,5 +1,5 @@
-// Soundy.java
-// Soundy synthesizer framework
+// FXR.java
+// SFXR file loader and playback class
 //
 // Copyright ©2010 Brigham Toskin
 // This software is part of the Rogue-Opcode game framework. It is distributable
@@ -15,37 +15,55 @@
 package rogue_opcode.soundy;
 
 import rogue_opcode.AudioResource;
+import android.media.AudioFormat;
+import android.media.AudioManager;
+import android.media.AudioTrack;
 
 
 /**
- * Soundy is a high-level encapsulation of the synthesis code. It presents an
- * interface more in line with a media player.
+ * This class is for loading and playing back synthesis parameter files created
+ * by the open source sound effect generator, SFXR. It supports file formats up
+ * through version 102, in addition to some more advanced/standard envelope
+ * functionality.
+ * <br /><br />
+ * FXR can load and pre-render the synthesized audio once for fast, efficient
+ * playback at runtime. Or, it can be configured to apply a small amount of
+ * randomness to the synthesis parameters and regenerate the sound every time it
+ * is played; this will lead to a more diverse soundscape, delivering a more
+ * interesting and realistic experience to players at the expense of increased
+ * processing overhead.
  *
  * @author Brigham Toskin
  */
-public class Soundy extends AudioResource
+public class FXR extends AudioResource
 {
-	// These are the audio player guts.
-	/*
-	 * protected AudioTrack mChannel1;
-	 * protected AudioTrack mChannel2;
-	 * protected AudioTrack mChannel3;
-	 * protected AudioTrack mChannel4;
-	 * protected WaveSource mSynth1, mLFO1;
-	 * protected WaveSource mSynth2, mLFO2;
-	 * protected WaveSource mSynth3, mLFO3;
-	 * protected WaveSource mSynth4, mLFO4;
-	 */
-	protected Oscillator mSynth1, mSynth2, mSynth3, mSynth4;
+	protected AudioTrack mOutStream;
+	protected WaveSource mSynth;
+	protected boolean mRandomize;
+
+	// c'tors //
 
 	/**
 	 * @param pResID
 	 */
-	public Soundy(int pResID)
+	public FXR(int pResID)
+	{
+		this(pResID, false);
+	}
+
+	public FXR(int pResID, boolean pRandomize)
 	{
 		super(pResID);
-		// TODO: read input file and allocate the above audio classes
+		mRandomize = pRandomize;
+		int tLength = 0; // TODO: load file and calculate length
+		// TODO: deduce the kind of WaveSource from file
+		mOutStream = new AudioTrack(AudioManager.STREAM_MUSIC,
+			WaveSource.sSampleRate, AudioFormat.CHANNEL_CONFIGURATION_MONO,
+			WaveSource.sFormat, tLength,
+			(pRandomize ? AudioTrack.MODE_STREAM : AudioTrack.MODE_STATIC));
 	}
+
+	// playback interfaces /////////////////////////////////////////////////////
 
 	/**
 	 * @return

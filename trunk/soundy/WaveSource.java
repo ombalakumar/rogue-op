@@ -87,8 +87,9 @@ public abstract class WaveSource
 		case SIN:
 		case TAN:
 		case HEMICYCLE:
-		default:
 			return new WaveTabler(pWF);
+		default:
+			throw new RuntimeException("Invalid enumeration value");
 		}
 	}
 
@@ -98,7 +99,7 @@ public abstract class WaveSource
 		mDuty = 0.5f;
 	}
 
-	// output //////////////////////////////////////////////////////////////////
+	// signal generation ///////////////////////////////////////////////////////
 
 	/**
 	 * Implement this method to return the appropriate raw, full amplitude
@@ -160,11 +161,27 @@ public abstract class WaveSource
 			return;
 		}
 
-		// precalc period
-		float tPeriod = Period(sSampleRate, pFreq);
-		float tPortion, tPhase;
+		// precalculate slide step
+		float tSlideStep = 0;
+		switch(pWaveMod)
+		{
+		case AMPSLIDE:
+			tSlideStep = (pSlideTo - 1.0f) / pSlideTime;
+			break;
+		case FREQSLIDE:
+			tSlideStep = (pSlideTo - pFreq) / pSlideTime;
+			break;
+		case DUTYSLIDE:
+			tSlideStep = (pSlideTo - mDuty) / pSlideTime;
+			break;
+		case PHASESLIDE:
+			tSlideStep = (pSlideTo - mPhase) / pSlideTime;
+			break;
+		}
 
 		// generate each sample
+		float tPeriod = Period(sSampleRate, pFreq);
+		float tPortion, tPhase;
 		float tDuty = mDuty;
 		for(int i = 0; i < oStream.length; i++)
 		{
@@ -174,17 +191,18 @@ public abstract class WaveSource
 				tDuty = mix_mean(tDuty, amp_mod(1.0f, pLFO[i] * pModArg));
 				tDuty = wrap_around(tDuty);
 			}
+			else if(pWaveMod == WaveModulation.DUTYSLIDE)
+				tDuty += tSlideStep;
 
 			// premodulate phaseshift
-			mPhase = wrap_around(mPhase);
+			tPhase = wrap_around(mPhase);
 			if(pWaveMod == WaveModulation.PHASEMOD)
-				tPhase = mPhase + (sSampleRate * pLFO[i] * pModArg);
+				tPhase = tPhase + (sSampleRate * pLFO[i] * pModArg);
+			else if(pWaveMod == WaveModulation.PHASESLIDE)
+				tPhase += tSlideStep;
 			else
-				tPhase = mPhase + (sSampleRate * pPhaseOffset);
+				tPhase = tPhase + (sSampleRate * pPhaseOffset);
 			tPhase = wrap_around(tPhase);
-
-			// grab and attenuate sample
-			oStream[i] = get_sample(tPhase) * pVol * tAmp;
 
 			// handle envelope calculations
 			if(mEnvelope != null)
@@ -193,13 +211,17 @@ public abstract class WaveSource
 				tAmp = mEnvelope.mAmp;
 			}
 
+			// grab and attenuate sample
+			oStream[i] = get_sample(tPhase) * pVol * tAmp;
+
 
 			// step to next sample, based on dutycycle
-			if(mPhase < sSampleRate / 2.0) // in first halfperiod
+			tPhase = mPhase;
+			if(tPhase < sSampleRate / 2.0) // in first halfperiod
 			{
 				if(tDuty == 0.0) //we should never be here; wrap
 				{
-					mPhase = wrap_second(mPhase, tDuty);
+					tPhase = wrap_second(tPhase, tDuty);
 					tPortion = 1.0f - tDuty;
 				}
 				else
@@ -209,7 +231,7 @@ public abstract class WaveSource
 			{
 				if(tDuty == 1.0) // we should never be here; wrap
 				{
-					mPhase = wrap_first(mPhase, tDuty);
+					tPhase = wrap_first(tPhase, tDuty);
 					tPortion = tDuty;
 				}
 				else
@@ -225,7 +247,13 @@ public abstract class WaveSource
 				oStream[i] = amp_mod(oStream[i], pLFO[i] * pModArg);
 				break;
 			case FREQMOD:
-				mPhase += pLFO[i] * pModArg;
+				tPhase += pLFO[i] * pModArg;
+				break;
+			case AMPSLIDE:
+				oStream[i] = amp_mod(oStream[i], pLFO[i] * pModArg);
+				break;
+			case FREQSLIDE:
+				tPhase += pLFO[i] * pModArg;
 				break;
 			default: // PM, DM handled above
 				break;
@@ -286,6 +314,15 @@ public abstract class WaveSource
 	// mix/mod /////////////////////////////////////////////////////////////////
 
 	/**
+	 * Specifies the type of modulation to apply to a synthesized waveform.
+	 */
+	public enum WaveModulation
+	{
+		NONE, AMPMOD, FREQMOD, PHASEMOD, DUTYMOD,
+		AMPSLIDE, FREQSLIDE, PHASESLIDE, DUTYSLIDE;
+	}
+
+	/**
 	 * Applies amplitude modulation to one sample.
 	 *
 	 * @param pW the wave sample to modulate.
@@ -311,11 +348,14 @@ public abstract class WaveSource
 	}
 
 	/**
-	 * Specifies the type of modulation to apply to a synthesized waveform.
+	 * Clips the signal to the range [-1.0, 1.0] inclusive.
+	 *
+	 * @param pWavAmp the wave sample to clip.
+	 * @return The clipped sample.
 	 */
-	public enum WaveModulation
+	protected static float clip(float pWavAmp)
 	{
-		NONE, AMPMOD, FREQMOD, PHASEMOD, DUTYMOD, AMPSLIDE, FREQSLIDE, PHASESLIDE, DUTYSLIDE;
+		return pWavAmp > 1.0f ? 1.0f : (pWavAmp < -1.0f ? -1.0f : pWavAmp);
 	}
 
 	// utility methods /////////////////////////////////////////////////////////
@@ -384,10 +424,5 @@ public abstract class WaveSource
 		while(pPhase < sSampleRate - tChunk)
 			pPhase += tChunk;
 		return pPhase;
-	}
-
-	protected static float clip(float pWavAmp)
-	{
-		return pWavAmp > 1.0f ? 1.0f : (pWavAmp < -1.0f ? -1.0f : pWavAmp);
 	}
 }
