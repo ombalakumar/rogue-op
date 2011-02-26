@@ -16,18 +16,22 @@ package rogue_opcode;
 
 
 import rogue_opcode.geometrics.XYf;
-import rogue_opcode.soundy.SoundEffect;
+// import rogue_opcode.soundy.SoundEffect;
 import android.app.Activity;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.os.SystemClock;
 import android.util.Log;
+import android.view.GestureDetector;
 import android.view.MotionEvent;
 import android.view.Window;
 import android.view.WindowManager;
+import android.view.GestureDetector.OnDoubleTapListener;
+import android.view.GestureDetector.OnGestureListener;
 
 
-public class GameProc extends Activity implements Runnable
+public class GameProc extends Activity implements Runnable, OnGestureListener,
+		OnDoubleTapListener
 {
 	public static final long UPDATE_FREQ = 30;
 	public static final long UPDATE_PERIOD = 1000 / UPDATE_FREQ;
@@ -41,11 +45,15 @@ public class GameProc extends Activity implements Runnable
 	protected static int sSeconds;
 	protected static long sFPS;
 
-	protected boolean mTouching;
-	protected XYf mTouchPos;
-
 	protected boolean mMousing;
 	protected XYf mMousePos;
+
+	private GestureDetector detector;
+	public TouchState mTouchState;
+
+	int mCurrentKey;
+	public boolean[] mKeys; //holds the state of the keys on the keyboard
+
 
 	protected boolean mRunning;
 	protected boolean mRestarting;
@@ -60,6 +68,8 @@ public class GameProc extends Activity implements Runnable
 		Log.d(TAG, "onCreate()");
 		super.onCreate(savedState);
 		sOnly = this;
+
+		mKeys = new boolean[525];
 
 		// set up graphics
 		requestWindowFeature(Window.FEATURE_NO_TITLE);
@@ -85,6 +95,9 @@ public class GameProc extends Activity implements Runnable
 		//		}
 
 		// user-provided init code
+		detector = new GestureDetector(this, this);
+		mTouchState = new TouchState();
+
 		InitializeOnce();
 	}
 
@@ -107,9 +120,6 @@ public class GameProc extends Activity implements Runnable
 		super.onResume();
 
 		// input data
-		mTouching = false;
-		mTouchPos = new XYf();
-		
 		mMousing = false;
 		mMousePos = new XYf();
 
@@ -127,7 +137,7 @@ public class GameProc extends Activity implements Runnable
 		Log.d(TAG, "  creating static arrays");
 		ActionElement.Init();
 		ScreenElement.Init();
-		SoundEffect.Init();
+		//SoundEffect.Init();
 
 		// user initialization code
 		InitializeOnResume();
@@ -135,6 +145,9 @@ public class GameProc extends Activity implements Runnable
 		// start the render and update threads
 		(sUpdateThread = new Thread(this)).start();
 		(AnimatedView.sRenderThread = new Thread(AnimatedView.sOnly)).start();
+
+		AnimatedView.sOnly.requestFocus();
+
 
 		// clean some up now to avoid latency later
 		Runtime r = Runtime.getRuntime();
@@ -160,8 +173,8 @@ public class GameProc extends Activity implements Runnable
 		// shut down
 		Die();
 		AnimatedView.sOnly.Die();
-		AudioResource.Die(); // stop and free all audio resources
-		SoundEffect.Die(); // free the sound pool
+		//AudioResource.Die(); // stop and free all audio resources
+		//SoundEffect.Die(); // free the sound pool
 
 		// clean some up now to avoid latency later
 		Runtime r = Runtime.getRuntime();
@@ -170,13 +183,15 @@ public class GameProc extends Activity implements Runnable
 
 	//	/** Called on app shutdown. */
 	//@Override
-/*	protected void onDestroy()
-	{
-		Log.d(TAG, "onDestroy()");
-		super.onDestroy();
-
-		Shutdown();
-	}*/
+	/*
+	 * protected void onDestroy()
+	 * {
+	 * Log.d(TAG, "onDestroy()");
+	 * super.onDestroy();
+	 * 
+	 * Shutdown();
+	 * }
+	 */
 
 	/** Stops the update thread. */
 	void Die()
@@ -262,6 +277,8 @@ public class GameProc extends Activity implements Runnable
 			{
 			}
 		}
+		
+		mTouchState.Clear();
 	}
 
 	// runtime stats ///////////////////////////////////////////////////////////
@@ -288,9 +305,10 @@ public class GameProc extends Activity implements Runnable
 	// user input callbacks ////////////////////////////////////////////////////
 
 	@Override
-	public boolean onTrackballEvent(MotionEvent pEvent) {
-		mMousePos.x = (int) (pEvent.getRawX() * 100);
-		mMousePos.y = (int) (pEvent.getRawY() * 100);
+	public boolean onTrackballEvent(MotionEvent pEvent)
+	{
+		mMousePos.x = (int)(pEvent.getX() * 100);
+		mMousePos.y = (int)(pEvent.getY() * 100);
 
 		mMousing = true;
 		return true;
@@ -307,42 +325,178 @@ public class GameProc extends Activity implements Runnable
 		return mMousePos;
 	}
 
-	// TODO: Event callback/interface for listeners; sort on Z?
+
 	@Override
-	public boolean onTouchEvent(MotionEvent pEvent)
+	public boolean onTouchEvent(MotionEvent me)
 	{
-		// handle touch events
-		int tAction = pEvent.getAction();
-		if(tAction == MotionEvent.ACTION_DOWN
-				|| tAction == MotionEvent.ACTION_MOVE)
-		{
-			mTouching = true;
-			mTouchPos.x = pEvent.getX() / AnimatedView.sOnly.mPreScaler;
-			mTouchPos.y = pEvent.getY() / AnimatedView.sOnly.mPreScaler;
-		}
-		else if(pEvent.getAction() == MotionEvent.ACTION_UP)
-		{
-			mTouching = false;
-		}
-
-		// slow down incoming touch events
-		try
-		{
-			Thread.sleep(UPDATE_PERIOD);
-		}
-		catch(InterruptedException e)
-		{
-		}
-		return true;
+		this.detector.onTouchEvent(me);
+		return super.onTouchEvent(me);
 	}
 
-	public boolean Touching()
+	@Override
+	public boolean onDown(MotionEvent e)
 	{
-		return mTouching;
+		//Toast.makeText(GameProc.sOnly, "down", 0).show();
+		return false;
 	}
 
-	public XYf TouchPos()
+	@Override
+	public boolean onFling(MotionEvent e1, MotionEvent e2, float velocityX,
+			float velocityY)
 	{
-		return mTouchPos;
+		mTouchState.SetState(TouchState.FLING, e1, e2);
+		return false;
 	}
+
+	@Override
+	public void onLongPress(MotionEvent e)
+	{
+		mTouchState.SetState(TouchState.LONG_TOUCH, e, null);
+	}
+
+	@Override
+	public boolean onScroll(MotionEvent e1, MotionEvent e2, float distanceX,
+			float distanceY)
+	{
+		//Toast.makeText(GameProc.sOnly, "scroll", 0).show();
+		return false;
+	}
+
+	@Override
+	public void onShowPress(MotionEvent e)
+	{
+		//Toast.makeText(GameProc.sOnly, "show press", 0).show();
+	}
+
+	@Override
+	public boolean onSingleTapUp(MotionEvent e)
+	{
+		//Toast.makeText(GameProc.sOnly, "single tap up", 0).show();
+		return false;
+	}
+
+	@Override
+	public boolean onDoubleTap(MotionEvent e)
+	{
+		mTouchState.SetState(TouchState.DOUBLE_TAP, e, null);
+		return false;
+	}
+
+	@Override
+	public boolean onDoubleTapEvent(MotionEvent e)
+	{
+		//Toast.makeText(GameProc.sOnly, "double tap event", 0).show();
+		return false;
+	}
+
+	@Override
+	public boolean onSingleTapConfirmed(MotionEvent e)
+	{
+		mTouchState.SetState(TouchState.SINGLE_TAP, e, null);
+		return false;
+	}
+
+
+	/**
+	 * TouchState is an inner class that holds state information about touch
+	 * events.
+	 * It is designed to be polled instead of event-driven.
+	 * 
+	 * @author Christopher R. Tooley
+	 * 
+	 */
+	protected class TouchState
+	{
+		public static final int SINGLE_TAP = 1;
+		public static final int DOUBLE_TAP = 2;
+		public static final int FLING = 4;
+		public static final int SCROLL = 8;
+		public static final int LONG_TOUCH = 16;
+
+		int mState;
+
+		MotionEvent mMainMotionEvent;
+		MotionEvent mSecondaryMotionEvent;
+
+		TouchState()
+		{
+			Clear();
+		}
+
+		public void SetState(int pState, MotionEvent pMainMotionEvent,
+				MotionEvent pSecondaryMotionEvent)
+		{
+			synchronized(this)
+			{
+				mState |= pState;
+				mMainMotionEvent = pMainMotionEvent;
+				mSecondaryMotionEvent = pSecondaryMotionEvent;
+			}
+		}
+
+		public void Clear()
+		{
+			synchronized(this)
+			{
+				mState = 0;
+			}
+		}
+
+		public XYf TouchPos() {
+			return new XYf(mMainMotionEvent.getX(), mMainMotionEvent.getY());
+		}
+		
+		public XYf SecondaryTouchPos() {
+			return new XYf(mSecondaryMotionEvent.getX(), mSecondaryMotionEvent.getY());
+		}
+		
+		public float GetMainX()
+		{
+			float tX = 0;
+			synchronized(this)
+			{
+				tX = mMainMotionEvent.getX();
+			}
+			return tX;
+		}
+
+		public float GetMainY()
+		{
+			float tY = 0;
+			synchronized(this)
+			{
+				tY = mMainMotionEvent.getY();
+			}
+			return tY;
+		}
+
+		public float GetSecondaryX()
+		{
+			float tX = 0;
+			synchronized(this)
+			{
+				tX = mSecondaryMotionEvent.getX();
+			}
+			return tX;
+		}
+
+		public float GetSecondaryY()
+		{
+			float tY = 0;
+			synchronized(this)
+			{
+				tY = mSecondaryMotionEvent.getY();
+			}
+			return tY;
+		}
+
+		public boolean Is(int pState)
+		{
+			synchronized(this)
+			{
+				return 0 != (mTouchState.mState & pState);
+			}
+		}
+	}
+
 }
