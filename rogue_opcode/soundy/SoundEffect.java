@@ -22,7 +22,6 @@ import java.io.Serializable;
 
 import rogue_opcode.AudioResource;
 import rogue_opcode.GameProc;
-
 import android.media.AudioManager;
 import android.media.SoundPool;
 import android.util.Log;
@@ -49,7 +48,6 @@ public class SoundEffect extends AudioResource implements Serializable
 
 	public static void Init()
 	{
-		Log.d(GameProc.TAG, "  SoundEffect.Init()");
 		sPool = new SoundPool(4, AudioManager.STREAM_MUSIC, QUALITY);
 	}
 

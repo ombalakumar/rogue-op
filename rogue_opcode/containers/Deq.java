@@ -14,6 +14,9 @@
 
 package rogue_opcode.containers;
 
+import java.util.Iterator;
+import java.util.NoSuchElementException;
+
 
 /** This class implements an array-based, double-ended, circular queue.
  * <br /><br />
@@ -37,10 +40,12 @@ public class Deq<E> extends Container<E>
 
 	// c'tor //
 
-	/** Construct a queue with a default capacity of 32.
-	 * @throws Exception on allocation failure
+	/**
+	 * Construct a queue with a default capacity of 32.
+	 *
+	 * @throws ContainerError on allocation failure
 	 */
-	public Deq() throws Exception
+	public Deq()
 	{
 		super(32);
 	}
@@ -50,22 +55,24 @@ public class Deq<E> extends Container<E>
 	 * @param pCapacity capacity to preallocate.
 	 * @throws Exception on allocation error.
 	 */
-	public Deq(int pCapacity) throws Exception
+	public Deq(int pCapacity)
 	{
 		super(pCapacity);
 	}
 
 	// memory management ///////////////////////////////////////////////////////
 
-	/** This is overridden to handle tail wrapping and non-zero heads. Note that
+	/**
+	 * This is overridden to handle tail wrapping and non-zero heads. Note that
 	 * the requested capacity must be a power of two, or you will break mostly
 	 * everything.
+	 *
 	 * @param pCount number of elements to preallocate space for.
-	 * @throws Exception on allocation failure
+	 * @throws ContainerError on allocation failure
 	 */
 	@Override
 	@SuppressWarnings("unchecked")
-	public void Reserve(int pCount) //throws Exception
+	public void Reserve(int pCount)
 	{
 		// shortcut for empty containers
 		if(data == null || size == 0)
@@ -124,7 +131,7 @@ public class Deq<E> extends Container<E>
 	 * @see rogue_opcode.containers.Container#At(int)
 	 */
 	@Override
-	public E At(int pIndex) //throws Exception
+	public E At(int pIndex)
 	{
 		validate_index(pIndex);
 		int tIndex = head + pIndex;
@@ -135,7 +142,7 @@ public class Deq<E> extends Container<E>
 	 * @see rogue_opcode.containers.Container#First()
 	 */
 	@Override
-	public E First() //throws Exception
+	public E First()
 	{
 		validate_nonempty();
 		return data[head];
@@ -145,7 +152,7 @@ public class Deq<E> extends Container<E>
 	 * @see rogue_opcode.containers.Container#Last()
 	 */
 	@Override
-	public E Last() //throws Exception
+	public E Last()
 	{
 		validate_nonempty();
 		return data[tail-1];
@@ -153,9 +160,9 @@ public class Deq<E> extends Container<E>
 
 	/**
 	 * @param pVal object to add to back of queue.
-	 * @throws Exception on allocation failure.
+	 * @throws ContainerError on allocation failure.
 	 */
-	public void PushBack(E pVal) throws Exception
+	public void PushBack(E pVal)
 	{
 		resize_inc();
 		data[tail++] = pVal;
@@ -164,9 +171,9 @@ public class Deq<E> extends Container<E>
 
 	/**
 	 * @param pVal object to add to back of queue.
-	 * @throws Exception on allocation error
+	 * @throws ContainerError on allocation error
 	 */
-	public void PushFront(E pVal) throws Exception
+	public void PushFront(E pVal)
 	{
 		resize_inc();
 		int tHead = (head - 1) & mask;
@@ -174,11 +181,13 @@ public class Deq<E> extends Container<E>
 		head = tHead;
 	}
 
-	/** Removes and returns the last element.
+	/**
+	 * Removes and returns the last element.
+	 *
 	 * @return The element from the back of the queue.
-	 * @throws Exception if empty.
+	 * @throws ContainerError if empty.
 	 */
-	public E PopBack() throws Exception
+	public E PopBack()
 	{
 		validate_nonempty();
 
@@ -190,11 +199,13 @@ public class Deq<E> extends Container<E>
 		return tVal;
 	}
 
-	/** Removes and returns the first element.
+	/**
+	 * Removes and returns the first element.
+	 *
 	 * @return The element from the front of the queue.
-	 * @throws Exception if empty.
+	 * @throws ContainerError if empty.
 	 */
-	public E PopFront() throws Exception
+	public E PopFront()
 	{
 		validate_nonempty();
 
@@ -206,15 +217,17 @@ public class Deq<E> extends Container<E>
 		return tVal;
 	}
 
-	/** Removes an arbitrary element from the middle of the queue.<br />
+	/**
+	 * Removes an arbitrary element from the middle of the queue.<br />
 	 * <b>Linear copy is inefficient; you probably should not be doing this.</b>
+	 *
 	 * @param pIndex index of element to remove.
-	 * @throws Exception if index is invalid.
+	 * @throws ContainerError if index is invalid.
 	 * @see rogue_opcode.containers.Container#Remove(int)
 	 */
 	// TODO: optimize to copy down shorter partition
 	@Override
-	public void Remove(int pIndex) //throws Exception // overload for special case in circular queue
+	public void Remove(int pIndex) // overload for special case in circular queue
 	{
 		int tIndex = (pIndex + head) & mask;
 
@@ -250,5 +263,23 @@ public class Deq<E> extends Container<E>
 			head++;
 		}
 		size--;
+	}
+
+	protected class DeqIterator extends ContainerIterator
+	{
+		@Override
+		public E next()
+		{
+			mDirty = false;
+			if(!hasNext())
+				throw new NoSuchElementException("End of container.");
+			return At(mIndex++);
+		}
+	}
+
+	@Override
+	public Iterator<E> iterator()
+	{
+		return new DeqIterator();
 	}
 }

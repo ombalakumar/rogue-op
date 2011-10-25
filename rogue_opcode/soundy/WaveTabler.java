@@ -14,8 +14,6 @@
 
 package rogue_opcode.soundy;
 
-import android.util.Log;
-
 
 /**
  * Generates and buffers 1 cycle of various waveforms at 1Hz in normalized
@@ -53,14 +51,7 @@ public class WaveTabler extends WaveSource
 	protected float get_sample(float pPhase)
 	{
 		float tSample = 0;
-		try
-		{
-			tSample = mWaveData[(int)Math.floor(pPhase)];
-		}
-		catch(Exception e)
-		{
-			Log.e("ionoclast", "bad phase is " + pPhase, e);
-		}
+		tSample = mWaveData[(int)Math.floor(pPhase)];
 		return tSample;
 	}
 

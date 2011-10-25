@@ -33,14 +33,14 @@ import android.util.Log;
 public class ScreenElement extends ActionElement
 {
 	private static final long serialVersionUID = 8512900123394987036L;
-	
-	protected GraphicResource mGR;
+
+	public GraphicResource mGR;
 
 	public XYZf mPos;
 	public XYZf mVel;
 
 	protected boolean mVisible;
-	
+
 	public boolean mSelfGuided;
 	XYf mSelfGuidedDestination;
 	float mSelfGuidedSpeed;
@@ -61,7 +61,8 @@ public class ScreenElement extends ActionElement
 				sAllSEs = new LazySortedArray<ScreenElement>(
 					new Comparator<ScreenElement>()
 					{
-						@Override
+							// XXX no overrides???
+							//@Override
 						public int compare(ScreenElement a, ScreenElement b)
 						{
 							// for some reason, returning 0 throws an exception.
@@ -112,7 +113,7 @@ public class ScreenElement extends ActionElement
 
 	protected void init(int pResourceID, String pText, int pX, int pY)
 	{
-		if(pResourceID != 0)
+		if(pResourceID > 0)
 			mGR = GraphicResource.FindGR(pResourceID);
 		else
 			mGR = null;
@@ -125,7 +126,7 @@ public class ScreenElement extends ActionElement
 		mDrawCentered = true;
 		mVisible = true;
 		mSelfGuided = false;
-		
+
 		mSelfGuidedDestination = new XYf();
 
 		try
@@ -241,13 +242,13 @@ public class ScreenElement extends ActionElement
 
 	public void moveTo(float pSpeed, XYf pDestination) {
 		mSelfGuided = true;
-		
+
 		mSelfGuidedDestination.x = pDestination.x;
 		mSelfGuidedDestination.y = pDestination.y;
-		
+
 		mSelfGuidedSpeed = pSpeed;
 	}
-	
+
 	/**
 	 * AnimatedView will call this repeatedly during the program's lifetime
 	 * automatically. Override in your derived class to do something exciting.
@@ -259,14 +260,14 @@ public class ScreenElement extends ActionElement
 	{
 		if(mSelfGuided) {
 			//mPos.add(mVel);
-			
+
 			//TODO - hmm, Brigdog took this shit and polished it into 3 lines of code.  Use that instead.
 			float a = mSelfGuidedDestination.x - mPos.x;
 			float b = mSelfGuidedDestination.y - mPos.y;
-			
+
 			float xFactor;
 			float yFactor;
-			
+
 			if (Math.abs(a) < Math.abs(b)) {
 				xFactor = Math.abs(a / b);
 				yFactor = 1 - xFactor;
@@ -274,17 +275,17 @@ public class ScreenElement extends ActionElement
 				yFactor = Math.abs(b / a);
 				xFactor = 1 - yFactor;
 			}
-			
-			
+
+
 			if (a < 0)
 				xFactor *= -1;
-			
+
 			if (b < 0)
 				yFactor *= -1;
-			
+
 			mPos.x +=( mSelfGuidedSpeed * xFactor);
 			mPos.y +=( mSelfGuidedSpeed * yFactor);
-			
+
 			if (WithinRange(mSelfGuidedDestination, mSelfGuidedSpeed)) {
 				mPos.x = mSelfGuidedDestination.x;
 				mPos.y = mSelfGuidedDestination.y;

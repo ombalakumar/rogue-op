@@ -15,6 +15,8 @@
 package rogue_opcode.containers;
 
 import java.io.Serializable;
+import java.util.Iterator;
+import java.util.NoSuchElementException;
 
 
 /** Simple {@code Exception} class that builds a friendly error message.
@@ -72,7 +74,7 @@ class ContainerError extends RuntimeException
  * @param E Generic storage type parameter.
  * @author Brigham Toskin
  */
-public abstract class Container<E> implements Serializable
+public abstract class Container<E> implements Serializable, Iterable<E>
 {
 	private static final long serialVersionUID = -3657997720954461476L;
 
@@ -158,6 +160,41 @@ public abstract class Container<E> implements Serializable
 	public abstract E Last(); //throws Exception;
 
 	public abstract E At(int pIndex); //throws Exception;
+
+	protected class ContainerIterator implements Iterator<E>
+	{
+		int mIndex = 0;
+		boolean mDirty = true;
+
+		@Override
+		public boolean hasNext()
+		{
+			return mIndex < size;
+		}
+
+		@Override
+		public E next()
+		{
+			mDirty = false;
+			if(!hasNext())
+				throw new NoSuchElementException("End of container.");
+			return data[mIndex++];
+		}
+
+		@Override
+		public void remove()
+		{
+			if(mDirty)
+				throw new IllegalStateException("remove() called before next()");
+			Remove(--mIndex);
+		}
+	}
+
+	@Override
+	public Iterator<E> iterator()
+	{
+		return new ContainerIterator();
+	}
 
 	// error checking and memory helpers ///////////////////////////////////////
 

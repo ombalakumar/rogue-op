@@ -58,6 +58,7 @@ public class AnimatedView
 
 	// debug stats
 	protected Paint mPaint;
+	protected int mBGColor = Color.WHITE;
 	//TODO - standardize on when to use static member vars - should mDebugString1 be accessed via sOnly or directly as a static?
 	//either is fine but we should do it one way or another - or am I missing something here?
 	protected static int sFramesDrawn;
@@ -80,7 +81,7 @@ public class AnimatedView
 		mPaint.setColor(Color.WHITE);
 		sFramesDrawn = 0;
 		sDebug = false;
-		
+
 		mDebugString1 = new String();
 		mDebugString2 = new String();
 
@@ -95,26 +96,28 @@ public class AnimatedView
 		GameProc.sOnly.getWindowManager().getDefaultDisplay().getMetrics(tDM);
 		mScreenWidth = tDM.widthPixels;
 		mScreenHeight = tDM.heightPixels;
-		
+
 		setFocusable(true);
 		setFocusableInTouchMode(true);
 	}
-	
+
 	@Override
 	public boolean onKeyDown(int pKeyCode, KeyEvent pEvent)  {
 		GameProc.sOnly.mCurrentKey = pKeyCode;
 		GameProc.sOnly.mKeys[pKeyCode] = true;
-		
+
+		if(pKeyCode == KeyEvent.KEYCODE_BACK)
+			return false;
 		return true;
 	}
-	
+
 	@Override
 	public boolean onKeyUp(int pKeyCode, KeyEvent pEvent)  {
 		GameProc.sOnly.mKeys[pKeyCode] = false;
-		
+
 		return true;
 	}
-	
+
 	// screen and drawing properties ///////////////////////////////////////////
 
 	/**
@@ -176,6 +179,16 @@ public class AnimatedView
 		}
 	}
 
+	public void BGColor(int pColor)
+	{
+		mBGColor = pColor;
+	}
+
+	public int BGColor()
+	{
+		return mBGColor;
+	}
+
 	public int FPS()
 	{
 		synchronized(this)
@@ -214,7 +227,6 @@ public class AnimatedView
 	@Override
 	public void run()
 	{
-		Log.d(GameProc.TAG, "Entering render thread");
 		mRunning = true;
 		while(mRunning)
 		{
@@ -248,17 +260,13 @@ public class AnimatedView
 		// (You are not expected to understand this—I don't!)
 		if(mKeepCenteredSE != null)
 		{
-			if(((mKeepCenteredSE.mPos.x - (mLogicalWidth / 6)) + mBaseHScroll)
-					< (mLogicalWidth / 2))
+			if(((mKeepCenteredSE.mPos.x - (mLogicalWidth / 6)) + mBaseHScroll) < (mLogicalWidth / 2))
 				mBaseHScroll += (mScrollSpeed.x * mPreScaler);
-			if(((mKeepCenteredSE.mPos.x + (mLogicalWidth / 6)) + mBaseHScroll)
-					> (mLogicalWidth / 2))
+			if(((mKeepCenteredSE.mPos.x + (mLogicalWidth / 6)) + mBaseHScroll) > (mLogicalWidth / 2))
 				mBaseHScroll -= (mScrollSpeed.x * mPreScaler);
-			if(((mKeepCenteredSE.mPos.x - (mLogicalWidth / 6)) + mBaseHScroll)
-					< (mLogicalWidth / 2))
+			if(((mKeepCenteredSE.mPos.x - (mLogicalWidth / 6)) + mBaseHScroll) < (mLogicalWidth / 2))
 				mBaseHScroll += (mScrollSpeed.x * mPreScaler);
-			if(((mKeepCenteredSE.mPos.x + (mLogicalWidth / 6)) + mBaseHScroll)
-					> (mLogicalWidth / 2))
+			if(((mKeepCenteredSE.mPos.x + (mLogicalWidth / 6)) + mBaseHScroll) > (mLogicalWidth / 2))
 				mBaseHScroll -= (mScrollSpeed.x * mPreScaler);
 
 			// TODO - need to limit how much we allow mBaseHScroll to go - when
@@ -270,7 +278,7 @@ public class AnimatedView
 
 		// draw world
 		sCurrentCanvas = tCanvas;
-		tCanvas.drawRGB(0, 0, 0); // TODO: parameterize whether to do this
+		tCanvas.drawColor(mBGColor);
 		ScreenElement.sAllSEs.SortIfDirty();
 		for(int i = 0; i < ScreenElement.sAllSEs.size; i++)
 		{
@@ -287,15 +295,16 @@ public class AnimatedView
 			}
 		}
 
-		
+
 		// draw stats
 		if(sDebug)
 		{
-			tCanvas.drawText("Time: " + GameProc.sOnly.Seconds(), 10, 10, mPaint);
+			tCanvas.drawText("Time: " + GameProc.sOnly.Seconds(), 10, 10,
+					mPaint);
 			tCanvas.drawText("FPS:  " + GameProc.sOnly.FPS(), 10, 22, mPaint);
 			tCanvas.drawText("#1:  " + mDebugString1, 10, 34, mPaint);
 			tCanvas.drawText("#2:  " + mDebugString2, 10, 46, mPaint);
-}
+		}
 		sCurrentCanvas = null;
 		mHolder.unlockCanvasAndPost(tCanvas);
 	}
@@ -305,7 +314,6 @@ public class AnimatedView
 	@Override
 	public void surfaceChanged(SurfaceHolder sh, int fmt, int w, int h)
 	{
-		Log.d(GameProc.TAG, "surfaceChanged()");
 		synchronized(this)
 		{
 			mSized = true;
@@ -317,7 +325,6 @@ public class AnimatedView
 	@Override
 	public void surfaceCreated(SurfaceHolder holder)
 	{
-		Log.d(GameProc.TAG, "surfaceCreated()");
 		synchronized(this)
 		{
 			mHasSurface = true;
@@ -328,7 +335,6 @@ public class AnimatedView
 	@Override
 	public void surfaceDestroyed(SurfaceHolder holder)
 	{
-		Log.d(GameProc.TAG, "surfaceDestroyed()");
 		synchronized(this)
 		{
 			mHasSurface = false;
