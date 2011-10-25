@@ -38,8 +38,8 @@ public class GraphicResource implements Serializable
 	public int mResID;
 
 	// these are the original/logical size of the image
-	protected int mBaseWidth;
-	protected int mBaseHeight;
+	public int mBaseWidth;
+	public int mBaseHeight;
 
 	protected static BitmapFactory.Options sBitmapOptions;
 	static
@@ -54,7 +54,7 @@ public class GraphicResource implements Serializable
 	/**
 	 * Construct a {@code GraphicResource} and load the specified image
 	 * resource.
-	 * 
+	 *
 	 * @param pResID the image's resource ID.
 	 */
 	public GraphicResource(int pResID)
@@ -65,16 +65,15 @@ public class GraphicResource implements Serializable
 
 	/**
 	 * Construct a {@code GraphicResource} from an existing bitmap.
-	 * 
+	 *
 	 * @param pBitmap the Bitmap to clone.
 	 */
 	public GraphicResource(Bitmap pBitmap)
 	{
 		mResID = sUID;
-		mImage = Bitmap.createBitmap(pBitmap);
-		mBaseWidth = mImage.getWidth();
-		mBaseHeight = mImage.getHeight();
-		//TODO - I'm not sure about the filter here - in the case of Congo Bongo 
+		mBaseWidth = pBitmap.getWidth();
+		mBaseHeight = pBitmap.getHeight();
+		//TODO - I'm not sure about the filter here - in the case of Congo Bongo
 		//we definitely don't want it, but in sudoku we do.  I'd make it a parameter
 		//but I'd like to keep parameters like this to a minimum.
 		mImage = Bitmap.createScaledBitmap(mImage,
@@ -87,6 +86,11 @@ public class GraphicResource implements Serializable
 	protected void load(int pResourceID)
 	{
 		// load image
+		if(pResourceID == 0)
+		{
+			mImage = null;
+			return;
+		}
 		Resources r = GameProc.sOnly.getResources();
 		mImage = BitmapFactory.decodeResource(r, pResourceID, sBitmapOptions);
 		mBaseWidth = mImage.getWidth();
@@ -157,4 +161,3 @@ public class GraphicResource implements Serializable
 		load(mResID); // loads the image resource
 	}
 }
-	

@@ -15,9 +15,6 @@
 package rogue_opcode.soundy;
 
 import rogue_opcode.AudioResource;
-import android.media.AudioFormat;
-import android.media.AudioManager;
-import android.media.AudioTrack;
 
 
 /**
@@ -37,7 +34,6 @@ import android.media.AudioTrack;
  */
 public class FXR extends AudioResource
 {
-	protected AudioTrack mOutStream;
 	protected WaveSource mSynth;
 	protected boolean mRandomize;
 
@@ -57,10 +53,10 @@ public class FXR extends AudioResource
 		mRandomize = pRandomize;
 		int tLength = 0; // TODO: load file and calculate length
 		// TODO: deduce the kind of WaveSource from file
-		mOutStream = new AudioTrack(AudioManager.STREAM_MUSIC,
+		/*mOutStream = new AudioTrack(AudioManager.STREAM_MUSIC,
 			WaveSource.sSampleRate, AudioFormat.CHANNEL_CONFIGURATION_MONO,
 			WaveSource.sFormat, tLength,
-			(pRandomize ? AudioTrack.MODE_STREAM : AudioTrack.MODE_STATIC));
+			(pRandomize ? AudioTrack.MODE_STREAM : AudioTrack.MODE_STATIC));*/
 	}
 
 	// playback interfaces /////////////////////////////////////////////////////

@@ -23,11 +23,11 @@ import android.os.Bundle;
 import android.os.SystemClock;
 import android.util.Log;
 import android.view.GestureDetector;
+import android.view.GestureDetector.OnDoubleTapListener;
+import android.view.GestureDetector.OnGestureListener;
 import android.view.MotionEvent;
 import android.view.Window;
 import android.view.WindowManager;
-import android.view.GestureDetector.OnDoubleTapListener;
-import android.view.GestureDetector.OnGestureListener;
 
 
 public class GameProc extends Activity implements Runnable, OnGestureListener,
@@ -65,7 +65,7 @@ public class GameProc extends Activity implements Runnable, OnGestureListener,
 	@Override
 	protected void onCreate(Bundle savedState)
 	{
-		Log.d(TAG, "onCreate()");
+		//		Log.d(TAG, "onCreate()");
 		super.onCreate(savedState);
 		sOnly = this;
 
@@ -116,7 +116,6 @@ public class GameProc extends Activity implements Runnable, OnGestureListener,
 	@Override
 	protected void onResume()
 	{
-		Log.d(TAG, "onResume()");
 		super.onResume();
 
 		// input data
@@ -134,7 +133,6 @@ public class GameProc extends Activity implements Runnable, OnGestureListener,
 			// TODO: load SettingsDB with default values
 		}
 
-		Log.d(TAG, "  creating static arrays");
 		ActionElement.Init();
 		ScreenElement.Init();
 		SoundEffect.Init();
@@ -144,7 +142,8 @@ public class GameProc extends Activity implements Runnable, OnGestureListener,
 
 		// start the render and update threads
 		(sUpdateThread = new Thread(this)).start();
-		(AnimatedView.sRenderThread = new Thread(AnimatedView.sOnly)).start();
+		(AnimatedView.sRenderThread = new Thread(AnimatedView.sOnly,
+			"Gameloop Thread")).start();
 
 		AnimatedView.sOnly.requestFocus();
 
@@ -188,7 +187,7 @@ public class GameProc extends Activity implements Runnable, OnGestureListener,
 	 * {
 	 * Log.d(TAG, "onDestroy()");
 	 * super.onDestroy();
-	 * 
+	 *
 	 * Shutdown();
 	 * }
 	 */
@@ -221,10 +220,10 @@ public class GameProc extends Activity implements Runnable, OnGestureListener,
 	// game update loop ////////////////////////////////////////////////////////
 
 	/** Thread to run logic updates */
-	@Override
+	// XXX no overrides???
+	//@Override
 	public void run()
 	{
-		Log.d(TAG, "Entering update thread");
 		mRunning = true;
 		while(mRunning)
 		{
@@ -277,14 +276,14 @@ public class GameProc extends Activity implements Runnable, OnGestureListener,
 			{
 			}
 		}
-		
+
 		mTouchState.Clear();
 	}
 
 	// runtime stats ///////////////////////////////////////////////////////////
 
 	/** Query performance statistics based on update timing. */
-	// TODO: does this belong here? Move to AnimatedView
+	public// TODO: does this belong here? Move to AnimatedView
 	long FPS()
 	{
 		synchronized(this)
@@ -294,7 +293,7 @@ public class GameProc extends Activity implements Runnable, OnGestureListener,
 	}
 
 	/** Query uptime statistics for update thread. */
-	long Seconds()
+	public long Seconds()
 	{
 		synchronized(this)
 		{
@@ -333,14 +332,16 @@ public class GameProc extends Activity implements Runnable, OnGestureListener,
 		return super.onTouchEvent(me);
 	}
 
-	@Override
+	// XXX no overrides???
+	//@Override
 	public boolean onDown(MotionEvent e)
 	{
 		//Toast.makeText(GameProc.sOnly, "down", 0).show();
 		return false;
 	}
 
-	@Override
+	// XXX no overrides???
+	//@Override
 	public boolean onFling(MotionEvent e1, MotionEvent e2, float velocityX,
 			float velocityY)
 	{
@@ -348,13 +349,15 @@ public class GameProc extends Activity implements Runnable, OnGestureListener,
 		return false;
 	}
 
-	@Override
+	// XXX no overrides???
+	//@Override
 	public void onLongPress(MotionEvent e)
 	{
 		mTouchState.SetState(TouchState.LONG_TOUCH, e, null);
 	}
 
-	@Override
+	// XXX no overrides???
+	//@Override
 	public boolean onScroll(MotionEvent e1, MotionEvent e2, float distanceX,
 			float distanceY)
 	{
@@ -362,34 +365,39 @@ public class GameProc extends Activity implements Runnable, OnGestureListener,
 		return false;
 	}
 
-	@Override
+	// XXX no overrides???
+	//@Override
 	public void onShowPress(MotionEvent e)
 	{
 		//Toast.makeText(GameProc.sOnly, "show press", 0).show();
 	}
 
-	@Override
+	// XXX no overrides???
+	//@Override
 	public boolean onSingleTapUp(MotionEvent e)
 	{
 		//Toast.makeText(GameProc.sOnly, "single tap up", 0).show();
 		return false;
 	}
 
-	@Override
+	// XXX no overrides???
+	//@Override
 	public boolean onDoubleTap(MotionEvent e)
 	{
 		mTouchState.SetState(TouchState.DOUBLE_TAP, e, null);
 		return false;
 	}
 
-	@Override
+	// XXX no overrides???
+	//@Override
 	public boolean onDoubleTapEvent(MotionEvent e)
 	{
 		//Toast.makeText(GameProc.sOnly, "double tap event", 0).show();
 		return false;
 	}
 
-	@Override
+	// XXX no overrides???
+	//@Override
 	public boolean onSingleTapConfirmed(MotionEvent e)
 	{
 		mTouchState.SetState(TouchState.SINGLE_TAP, e, null);
@@ -401,11 +409,11 @@ public class GameProc extends Activity implements Runnable, OnGestureListener,
 	 * TouchState is an inner class that holds state information about touch
 	 * events.
 	 * It is designed to be polled instead of event-driven.
-	 * 
+	 *
 	 * @author Christopher R. Tooley
-	 * 
+	 *
 	 */
-	protected class TouchState
+	public class TouchState
 	{
 		public static final int SINGLE_TAP = 1;
 		public static final int DOUBLE_TAP = 2;
@@ -445,11 +453,11 @@ public class GameProc extends Activity implements Runnable, OnGestureListener,
 		public XYf TouchPos() {
 			return new XYf(mMainMotionEvent.getX(), mMainMotionEvent.getY());
 		}
-		
+
 		public XYf SecondaryTouchPos() {
 			return new XYf(mSecondaryMotionEvent.getX(), mSecondaryMotionEvent.getY());
 		}
-		
+
 		public float GetMainX()
 		{
 			float tX = 0;
