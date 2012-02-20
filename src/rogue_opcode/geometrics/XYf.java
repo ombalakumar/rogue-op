@@ -23,6 +23,10 @@ public class XYf implements Serializable
 {
 	private static final long serialVersionUID = -3490122379205325810L;
 
+	// cartesian (x, y) or vector components <i, j>
+	public float x;
+	public float y;
+
 	// c'tors //
 
 	public XYf()
@@ -30,15 +34,15 @@ public class XYf implements Serializable
 		this(0.0f, 0.0f);
 	}
 
-	public XYf(float x, float y)
+	public XYf(float pX, float pY)
 	{
-		this.x = x;
-		this.y = y;
+		this.x = pX;
+		this.y = pY;
 	}
 
-	public XYf(XYf xy)
+	public XYf(XYf pSourceXY)
 	{
-		this(xy.x, xy.y);
+		this(pSourceXY.x, pSourceXY.y);
 	}
 
 	// blah
@@ -53,67 +57,67 @@ public class XYf implements Serializable
 		return new Point(Math.round(x), Math.round(y));
 	}
 
-	public void set(XYf xy)
+	public void set(XYf pSourceXY)
 	{
-		x = xy.x;
-		y = xy.y;
+		x = pSourceXY.x;
+		y = pSourceXY.y;
 	}
 
 	// arithmetic operators ////////////////////////////////////////////////////
 
-	public XYf plus(XYf xy)
+	public XYf plus(XYf pOther)
 	{
-		return new XYf(xy.x + x, xy.y + y);
+		return new XYf(pOther.x + x, pOther.y + y);
 	}
 
-	public XYf minus(XYf xy)
+	public XYf minus(XYf pOther)
 	{
-		return new XYf(x - xy.x, y - xy.y);
+		return new XYf(x - pOther.x, y - pOther.y);
 	}
 
-	public XYf add(XYf xy)
+	public XYf add(XYf pOther)
 	{
-		x += xy.x;
-		y += xy.y;
+		x += pOther.x;
+		y += pOther.y;
 		return this;
 	}
 
-	public XYf sub(XYf xy)
+	public XYf sub(XYf pOther)
 	{
-		x -= xy.x;
-		y -= xy.y;
+		x -= pOther.x;
+		y -= pOther.y;
 		return this;
 	}
 
-	public XYf times(float scalar)
+	public XYf times(float pScalar)
 	{
-		return new XYf(x*scalar, y*scalar);
+		return new XYf(x * pScalar, y * pScalar);
 	}
 
-	public XYf dividedBy(float scalar)
+	public XYf dividedBy(float pScalar)
 	{
-		return new XYf(x/scalar, y/scalar);
+		return new XYf(x / pScalar, y / pScalar);
 	}
 
-	public XYf mul(float scalar)
+	public XYf mul(float pScalar)
 	{
-		x *= scalar;
-		y *= scalar;
+		x *= pScalar;
+		y *= pScalar;
 		return this;
 	}
 
-	public XYf div(float scalar)
+	public XYf div(float pScalar)
 	{
-		x /= scalar;
-		y /= scalar;
+		x /= pScalar;
+		y /= pScalar;
 		return this;
 	}
 
 	// linear algebra operators ////////////////////////////////////////////////
 
-	public float Dot(XYf b)
+	public float Dot(XYf pOther)
 	{
-		return x * b.x + y * b.y;
+		return x * pOther.x + y * pOther.y;
 	};
 
 	public float Magnitude()
@@ -128,10 +132,4 @@ public class XYf implements Serializable
 		y /= tMag;
 		return this;
 	}
-
-	// data ////////////////////////////////////////////////////////////////////
-
-	// cartesian (x, y) or vector components <i, j>
-	public float x;
-	public float y;
 }

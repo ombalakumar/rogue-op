@@ -24,6 +24,9 @@ public class XYZf extends XYf
 {
 	private static final long serialVersionUID = 4186038949433460479L;
 
+	// cartesian z or vector component k
+	public float z;
+
 	// c'tors //
 
 	public XYZf()
@@ -31,87 +34,86 @@ public class XYZf extends XYf
 		this(0.0f, 0.0f, 0.0f);
 	}
 
-	public XYZf(float x, float y, float z)
+	public XYZf(float pX, float pY, float pZ)
 	{
-		this.x = x;
-		this.y = y;
-		this.z = z;
+		this.x = pX;
+		this.y = pY;
+		this.z = pZ;
 	}
 
-	public XYZf(XYZf xyz)
+	public XYZf(XYZf pSource)
 	{
-		this(xyz.x, xyz.y, xyz.z);
+		this(pSource.x, pSource.y, pSource.z);
 	}
 
-	// blah
 	@Override
 	public String toString()
 	{
 		return "(" + x + ", " + y + ", " + z + ")";
 	}
 
-	public void set(XYZf xyz)
+	public void set(XYZf pSource)
 	{
-		x = xyz.x;
-		y = xyz.y;
-		z = xyz.z;
+		x = pSource.x;
+		y = pSource.y;
+		z = pSource.z;
 	}
 
 	// arithmetic operators ////////////////////////////////////////////////////
 
-	public XYZf plus(XYZf xyz)
+	public XYZf plus(XYZf pOther)
 	{
-		return new XYZf(xyz.x + x, xyz.y + y, xyz.z + z);
+		return new XYZf(pOther.x + x, pOther.y + y, pOther.z + z);
 	}
 
-	public XYZf minus(XYZf xyz)
+	public XYZf minus(XYZf pOther)
 	{
-		return new XYZf(x - xyz.x, y - xyz.y, z - xyz.z);
+		return new XYZf(x - pOther.x, y - pOther.y, z - pOther.z);
 	}
 
-	public XYZf add(XYZf xyz)
+	public XYZf add(XYZf pOther)
 	{
-		x += xyz.x;
-		y += xyz.y;
-		z += xyz.z;
+		x += pOther.x;
+		y += pOther.y;
+		z += pOther.z;
 		return this;
 	}
 
-	public XYZf sub(XYZf xyz)
+	public XYZf sub(XYZf pOther)
 	{
-		x -= xyz.x;
-		y -= xyz.y;
-		z -= xyz.z;
-		return this;
-	}
-
-	@Override
-	public XYZf times(float scalar)
-	{
-		return new XYZf(x * scalar, y * scalar, z * scalar);
-	}
-
-	@Override
-	public XYZf dividedBy(float scalar)
-	{
-		return new XYZf(x / scalar, y / scalar, z / scalar);
-	}
-
-	@Override
-	public XYZf mul(float scalar)
-	{
-		x *= scalar;
-		y *= scalar;
-		z *= scalar;
+		x -= pOther.x;
+		y -= pOther.y;
+		z -= pOther.z;
 		return this;
 	}
 
 	@Override
-	public XYZf div(float scalar)
+	public XYZf times(float pScalar)
 	{
-		x /= scalar;
-		y /= scalar;
-		z /= scalar;
+		return new XYZf(x * pScalar, y * pScalar, z * pScalar);
+	}
+
+	@Override
+	public XYZf dividedBy(float pScalar)
+	{
+		return new XYZf(x / pScalar, y / pScalar, z / pScalar);
+	}
+
+	@Override
+	public XYZf mul(float pScalar)
+	{
+		x *= pScalar;
+		y *= pScalar;
+		z *= pScalar;
+		return this;
+	}
+
+	@Override
+	public XYZf div(float pScalar)
+	{
+		x /= pScalar;
+		y /= pScalar;
+		z /= pScalar;
 		return this;
 	}
 
@@ -119,9 +121,9 @@ public class XYZf extends XYf
 
 	// TODO: cross-product
 
-	public float Dot(XYZf b)
+	public float Dot(XYZf pOther)
 	{
-		return x * b.x + y * b.y + z * b.z;
+		return x * pOther.x + y * pOther.y + z * pOther.z;
 	}
 
 	@Override
@@ -139,9 +141,4 @@ public class XYZf extends XYf
 		z /= tMag;
 		return this;
 	}
-
-	// data ////////////////////////////////////////////////////////////////////
-
-	// cartesian z or vector component k
-	public float z;
 }
