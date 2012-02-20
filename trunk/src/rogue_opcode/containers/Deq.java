@@ -1,7 +1,7 @@
 // Deq.java
 // Dynamical array-based double-ended, circular queue class
 //
-// Copyright ©2009 - 2010 Brigham Toskin
+// Copyright ©2009 - 2012 Brigham Toskin
 // This software is part of the Rogue-Opcode game framework. It is distributable
 // under the terms of a modified MIT License. You should have received a copy of
 // the license in the file LICENSE. If not, see:
@@ -36,28 +36,37 @@ public class Deq<E> extends Container<E>
 {
 	private static final long serialVersionUID = 225699902551302855L;
 
+	/**
+	 * Default size to allocate storage for.
+	 * <br/><br/>
+	 * <b>Const value:</b> <code>32</code>
+	 */
+	public static final int DEFAULT_ALLOCATION_SIZE = 32;
+
 	public int head = 0, tail = 0, mask;
 
 	// c'tor //
 
 	/**
-	 * Construct a queue with a default capacity of 32.
+	 * Construct a queue with a default capacity of DEFAULT_ALLOCATION_SIZE.
 	 *
-	 * @throws ContainerError on allocation failure
+	 * @see #DEFAULT_ALLOCATION_SIZE
 	 */
 	public Deq()
 	{
-		super(32);
+		super(DEFAULT_ALLOCATION_SIZE);
 	}
 
-	/** Construct a queue with requested capacity. Note that the requested
-	 * capacity must be a power of two, or you will break mostly everything.
+	/**
+	 * Construct a queue with requested capacity. Note that the requested
+	 * capacity should be a power of two; it will be increased to the next
+	 * highest power of two, if it is not.
+	 *
 	 * @param pCapacity capacity to preallocate.
-	 * @throws Exception on allocation error.
 	 */
 	public Deq(int pCapacity)
 	{
-		super(pCapacity);
+		super(next_power_of_2(pCapacity));
 	}
 
 	// memory management ///////////////////////////////////////////////////////
@@ -219,10 +228,10 @@ public class Deq<E> extends Container<E>
 
 	/**
 	 * Removes an arbitrary element from the middle of the queue.<br />
-	 * <b>Linear copy is inefficient; you probably should not be doing this.</b>
+	 * <b>Linear copy is inefficient; you probably should not be doing this in a
+	 * loop, or for large datasets.</b>
 	 *
 	 * @param pIndex index of element to remove.
-	 * @throws ContainerError if index is invalid.
 	 * @see rogue_opcode.containers.Container#Remove(int)
 	 */
 	// TODO: optimize to copy down shorter partition
@@ -281,5 +290,16 @@ public class Deq<E> extends Container<E>
 	public Iterator<E> iterator()
 	{
 		return new DeqIterator();
+	}
+
+	protected static int next_power_of_2(final int pInitialValue)
+	{
+		int tPow2 = pInitialValue;
+		tPow2 |= tPow2 >> 1;
+		tPow2 |= tPow2 >> 2;
+		tPow2 |= tPow2 >> 4;
+		tPow2 |= tPow2 >> 8;
+		tPow2 |= tPow2 >> 16;
+		return tPow2 + 1;
 	}
 }

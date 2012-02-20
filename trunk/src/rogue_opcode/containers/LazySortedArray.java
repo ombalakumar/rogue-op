@@ -32,7 +32,7 @@ import java.util.Comparator;
  * point, the program can execute a single sort action to resynchronize the
  * structure.
  *
- * @param E the storage type parameter.
+ * @param <E> the storage type parameter.
  * @author Brigham Toskin
  */
 public class LazySortedArray<E> extends Array<E>
@@ -45,21 +45,25 @@ public class LazySortedArray<E> extends Array<E>
 	// c'tors //
 
 	/**
-	 * @param pCmp
-	 * @throws Exception
+	 * Constructs a sorted array instance, and sets the sorting Comparator to
+	 * the supplied reference.
+	 *
+	 * @param pCmp the Comparator to use for sorting operations.
 	 */
-	public LazySortedArray(Comparator<E> pCmp) throws Exception
+	public LazySortedArray(Comparator<E> pCmp)
 	{
 		super();
 		mComparator = pCmp;
 	}
 
 	/**
-	 * @param pCmp
-	 * @param pCapacity
-	 * @throws Exception
+	 * Constructs a sorted array instance with the specified initial capacity,
+	 * and sets the sorting Comparator to the supplied reference.
+	 *
+	 * @param pCmp the Comparator to use for sorting operations.
+	 * @param pCapacity initial capacity to allocate.
 	 */
-	public LazySortedArray(Comparator<E> pCmp, int pCapacity) throws Exception
+	public LazySortedArray(Comparator<E> pCmp, int pCapacity)
 	{
 		super(pCapacity);
 		mComparator = pCmp;
@@ -68,12 +72,13 @@ public class LazySortedArray<E> extends Array<E>
 	// container interfaces ////////////////////////////////////////////////////
 
 	/**
-	 * @param pVal
-	 * @throws Exception
-	 * @see rogue_opcode.containers.Array#Append(java.lang.Object)
+	 * Appends a new element to the end of the array, reallocating the buffer if
+	 * necessary. This marks the array as dirty.
+	 *
+	 * @param pVal the item to append.
 	 */
 	@Override
-	public void Append(E pVal) //throws Exception
+	public void Append(E pVal)
 	{
 		synchronized(this)
 		{
@@ -83,8 +88,7 @@ public class LazySortedArray<E> extends Array<E>
 	}
 
 	/**
-	 *
-	 * @see rogue_opcode.containers.Container#Clear()
+	 * Clears this array, and resets the dirty flag.
 	 */
 	@Override
 	public void Clear()
@@ -97,39 +101,34 @@ public class LazySortedArray<E> extends Array<E>
 	}
 
 	/**
-	 * @return
-	 * @throws Exception
-	 * @see rogue_opcode.containers.Array#First()
+	 * @return the first element, sorting the data first if necessary.
 	 */
 	@Override
-	public E First() //throws Exception
+	public E First()
 	{
 		SortIfDirty();
 		return super.First();
 	}
 
 	/**
-	 * @return
-	 * @throws Exception
-	 * @see rogue_opcode.containers.Array#Last()
+	 * @return the last element, sorting the data first if necessary.
 	 */
 	@Override
-	public E Last() //throws Exception
+	public E Last()
 	{
 		SortIfDirty();
 		return super.Last();
 	}
 
 	/**
-	 * Retrieve element at offset <code>pIndex</code>. Asserts dirty flag.
-	 *
+	 * Retrieve element at offset <code>pIndex</code>. This marks the array as
+	 * dirty.
+	 * 
 	 * @param pIndex offset from beginning of array to retrieve element.
 	 * @return the element at the requested index.
-	 * @throws Exception if <code>pIndex</code> is out of bounds.
-	 * @see rogue_opcode.containers.Array#At(int)
 	 */
 	@Override
-	public E At(int pIndex) //throws Exception
+	public E At(int pIndex)
 	{
 		mDirty = true;
 		return super.At(pIndex);

@@ -17,9 +17,11 @@ package rogue_opcode.containers;
 import java.util.Iterator;
 
 
-/** When directly accessing the underlying {@code data} array, indices {@code
- * [0, size)} are valid.
- * @param E Generic storage type parameter.
+/**
+ * When directly accessing the underlying {@code data} array, indices
+ * {@code [0, size)} are valid.
+ *
+ * @param <E> Generic storage type parameter.
  * @see rogue_opcode.containers.Container
  * @author Brigham Toskin
  */
@@ -31,18 +33,16 @@ public class Array<E> extends Container<E> implements Iterator<E>, Iterable<E>
 	// c'tor //
 
 	/** Default constructor preallocates space for up to 32 elements.
-	 * @throws Exception on allocation failure.
 	 */
-	public Array() //throws Exception
+	public Array()
 	{
 		super(32);
 	}
 
 	/** Preallocates space for up to {@code pCapacity} elements.
 	 * @param pCapacity number of elements to allocate space for.
-	 * @throws Exception on allocation failure.
 	 */
-	public Array(int pCapacity) //throws Exception
+	public Array(int pCapacity)
 	{
 		super(pCapacity);
 	}
@@ -50,34 +50,33 @@ public class Array<E> extends Container<E> implements Iterator<E>, Iterable<E>
 	// data access /////////////////////////////////////////////////////////////
 
 	/**
-	 * @throws Exception if empty.
 	 * @see rogue_opcode.containers.Container#First()
 	 */
 	@Override
-	public E First() //throws Exception
+	public E First()
 	{
 		validate_nonempty();
 		return data[0];
 	}
 
 	/**
-	 * @throws Exception if empty.
 	 * @see rogue_opcode.containers.Container#Last()
 	 */
 	@Override
-	public E Last() //throws Exception
+	public E Last()
 	{
 		validate_nonempty();
 		return data[size - 1];
 	}
 
-	/** Retrieve element at index {@code pOffset}.
+	/**
+	 * Retrieve element at index {@code pOffset}.
+	 *
 	 * @param pIndex element index to retrieve.
-	 * @throws Exception on invalid index.
-	 * @see rogue_opcode.containers.Container#at(int)
+	 * @see rogue_opcode.containers.Container#At(int)
 	 */
 	@Override
-	public E At(int pIndex) //throws Exception
+	public E At(int pIndex)
 	{
 		validate_index(pIndex);
 		return data[pIndex];
@@ -86,9 +85,8 @@ public class Array<E> extends Container<E> implements Iterator<E>, Iterable<E>
 	/** Appends a new element to the end of the array, reallocating the buffer
 	 * if necessary.
 	 * @param pVal the item to append.
-	 * @throws Exception on allocation failure.
 	 */
-	public void Append(E pVal) //throws Exception
+	public void Append(E pVal)
 	{
 		resize_inc();
 		data[size-1] = pVal;
@@ -117,6 +115,6 @@ public class Array<E> extends Container<E> implements Iterator<E>, Iterable<E>
 	public Iterator<E> iterator()
 	{
 		mIteratorIndex = 0;
-		return (Iterator<E>)this;
+		return this;
 	}
 }

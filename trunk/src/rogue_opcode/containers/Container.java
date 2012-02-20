@@ -35,19 +35,21 @@ class ContainerError extends RuntimeException
 	ContainerError(String error_msg, Throwable context)
 	{
 		super("Error in " + context.getStackTrace()[1].toString() + " - " +
-				error_msg);
+				error_msg, context);
 	}
 
-	//	/** Constructs an {@code Exception} with a friendly error message, which
-	//	 * includes the name of the calling method two frames back. This is because
-	//	 * we don't usually throw one of these ourselves, but pawn it off to a
-	//	 * helper method.
-	//	 * @param error_msg brief description of error condition.
-	//	 */
-	//	ContainerError(String error_msg)
-	//	{
-	//		this(error_msg, null);
-	//	}
+	/**
+	 * Constructs an {@code Exception} with a friendly error message, which
+	 * includes the name of the calling method two frames back. This is because
+	 * we don't usually throw one of these ourselves, but pawn it off to a
+	 * helper method.
+	 *
+	 * @param error_msg brief description of error condition.
+	 */
+	ContainerError(String error_msg)
+	{
+		this(error_msg, null);
+	}
 }
 
 
@@ -66,12 +68,13 @@ class ContainerError extends RuntimeException
  * iterations.
  * <br /><br />
  * Note that {@code Container} is an abstract class; some of the
- * common and default interfaces have been implemented for you. To use {@code
- * Container}, extend it with your derived class, and implement the missing
+ * common and default interfaces have been implemented for you. To use
+ * {@code Container}, extend it with your derived class, and implement the
+ * missing
  * methods and any others that require customized behavior, <i>e.g.</i> for a
  * circular queue.
  *
- * @param E Generic storage type parameter.
+ * @param <E> Generic storage type parameter.
  * @author Brigham Toskin
  */
 public abstract class Container<E> implements Serializable, Iterable<E>
@@ -95,7 +98,7 @@ public abstract class Container<E> implements Serializable, Iterable<E>
 	}
 
 	@SuppressWarnings("unchecked")
-	public void Reserve(int pCount) //throws Exception
+	public void Reserve(int pCount)
 	{
 		E[] tData = data; // grab a local ref
 
@@ -127,9 +130,8 @@ public abstract class Container<E> implements Serializable, Iterable<E>
 	/** Removes an arbitrary element from the middle of the container.<br />
 	 * <b>Linear copy is inefficient; you probably should not be doing this.</b>
 	 * @param pIndex index of element to remove.
-	 * @throws Exception on invalid index.
 	 */
-	public void Remove(int pIndex) //throws Exception
+	public void Remove(int pIndex)
 	{
 		validate_index(pIndex);
 		E[] tData = data; // grab local ref
@@ -155,11 +157,11 @@ public abstract class Container<E> implements Serializable, Iterable<E>
 
 	// element access aliases //////////////////////////////////////////////////
 
-	public abstract E First(); //throws Exception;
+	public abstract E First();;
 
-	public abstract E Last(); //throws Exception;
+	public abstract E Last();;
 
-	public abstract E At(int pIndex); //throws Exception;
+	public abstract E At(int pIndex);;
 
 	protected class ContainerIterator implements Iterator<E>
 	{
@@ -198,33 +200,33 @@ public abstract class Container<E> implements Serializable, Iterable<E>
 
 	// error checking and memory helpers ///////////////////////////////////////
 
-	protected static void validate_pointer(Object pRef) //throws Exception
+	protected static void validate_pointer(Object pRef)
 	{
 		if(pRef == null)
 			throw new ContainerError("Dereferencing null pointer.",
 					new Exception());
 	}
 
-	protected static void validate_alloc(Object pRef) //throws Exception
+	protected static void validate_alloc(Object pRef)
 	{
 		if(pRef == null)
 			throw new ContainerError("Allocation failed.", new Exception());
 	}
 
-	protected void validate_nonempty() //throws Exception
+	protected void validate_nonempty()
 	{
 		if(size < 1)
 			throw new ContainerError("Accessing empty container.",
 					new Exception());
 	}
 
-	protected void validate_index(int pIndex) //throws Exception
+	protected void validate_index(int pIndex)
 	{
 		if(pIndex >= size)
 			throw new ContainerError("Index out of bounds.", new Exception());
 	}
 
-	protected void resize_inc() //throws Exception
+	protected void resize_inc()
 	{
 		int tLen = data.length;
 		if(size == tLen)
@@ -232,7 +234,7 @@ public abstract class Container<E> implements Serializable, Iterable<E>
 		size++;
 	}
 
-	protected void resize_add(int count) //throws Exception
+	protected void resize_add(int count)
 	{
 		if(size + count > data.length)
 		{
