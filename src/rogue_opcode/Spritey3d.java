@@ -61,8 +61,8 @@ public class Spritey3d extends Spritey
 	// c'tor ///////////////////////////////////////////////////////////////////
 
 	/**
-	 * @param pResourceID
-	 * @param pFrameCount
+	 * @param pResourceID image resource ID of sprite strip graphic.
+	 * @param pFrameCount number of frames in the sprite strip.
 	 */
 	public Spritey3d(int pResourceID, int pFrameCount)
 	{
@@ -71,10 +71,11 @@ public class Spritey3d extends Spritey
 	}
 
 	/**
-	 * @param pResourceID
-	 * @param pFrameCount
-	 * @param pX
-	 * @param pY
+	 * @param pResourceID image resource ID of sprite strip graphic.
+	 * @param pFrameCount number of frames in the sprite strip.
+	 * @param pX initial X position.
+	 * @param pY initial Y position.
+	 * @param pZ initial Z position.
 	 */
 	public Spritey3d(int pResourceID, int pFrameCount, int pX, int pY, int pZ)
 	{
@@ -110,7 +111,6 @@ public class Spritey3d extends Spritey
 		tDrawDest.top = tTop;
 		tDrawDest.right = tLeft + mFrameWidth * tScaleFactor;
 		tDrawDest.bottom = tTop + mFrameHeight * tScaleFactor;
-		// XXX: toRect might be very inefficient!
 		tCanvas.drawBitmap(mGR.mImage, mFrame.toRect(), tDrawDest, null);
 	}
 }

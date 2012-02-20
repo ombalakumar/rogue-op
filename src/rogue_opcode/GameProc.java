@@ -15,8 +15,8 @@
 package rogue_opcode;
 
 
-//import dalvik.system.VMRuntime;
-//import com.ngc.MGEPCT.BaG;
+// import dalvik.system.VMRuntime;
+// import com.ngc.MGEPCT.BaG;
 
 import rogue_opcode.geometrics.XYf;
 import rogue_opcode.soundy.SoundEffect;
@@ -28,23 +28,31 @@ import android.os.Bundle;
 import android.os.SystemClock;
 import android.util.Log;
 import android.view.GestureDetector;
+import android.view.GestureDetector.OnGestureListener;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
-import android.view.GestureDetector.OnGestureListener;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
 import android.widget.RelativeLayout;
 
-//import android.view.GestureDetector.OnDoubleTapListener;
-//CRT - the OnDoubleTapListener code works great, but because android is listening for the double tap after a single
-//tap you cannot tap and then flick in rapid succession as is needed in a game - for example if a single tap triggers a jump
-//and a fling triggers a move then if double tap support is enabled you cannot immediately jump and then move - the move
-//will be delayed by about a (critical) 1/2 second.
-//I'd like to make this some kind of parameter but don't know how to do that with interfaces...
 
-public class GameProc extends Activity implements Runnable, OnGestureListener/*,OnDoubleTapListener*/
+// import android.view.GestureDetector.OnDoubleTapListener;
+// CRT - the OnDoubleTapListener code works great, but because android is
+// listening for the double tap after a single
+// tap you cannot tap and then flick in rapid succession as is needed in a game
+// - for example if a single tap triggers a jump
+// and a fling triggers a move then if double tap support is enabled you cannot
+// immediately jump and then move - the move
+// will be delayed by about a (critical) 1/2 second.
+// I'd like to make this some kind of parameter but don't know how to do that
+// with interfaces...
+
+public class GameProc extends Activity implements Runnable, OnGestureListener/*
+																			 * ,
+																			 * OnDoubleTapListener
+																			 */
 {
 	public static final long UPDATE_FREQ = 30;
 	public static final long UPDATE_PERIOD = 1000 / UPDATE_FREQ;
@@ -52,7 +60,7 @@ public class GameProc extends Activity implements Runnable, OnGestureListener/*,
 
 	public static GameProc sOnly;
 	protected static Thread sUpdateThread;
-	
+
 	public RelativeLayout mLayout;
 
 	// stats
@@ -72,10 +80,11 @@ public class GameProc extends Activity implements Runnable, OnGestureListener/*,
 	protected boolean mRunning;
 	protected boolean mRestarting;
 	protected boolean mExiting;
-	
+
 	EditableTextPositionParams mEditTextParams;
-	
-	class EditableTextPositionParams {
+
+	class EditableTextPositionParams
+	{
 		XYf mQueuedViewLocation;
 		int mWidth;
 		int mHeight;
@@ -83,8 +92,9 @@ public class GameProc extends Activity implements Runnable, OnGestureListener/*,
 		EditText mEdit;
 		RelativeLayout.LayoutParams mRLP;
 		RelativeLayout mRL;
-		
-		EditableTextPositionParams() {
+
+		EditableTextPositionParams()
+		{
 			mQueuedViewLocation = null;
 			mWidth = 0;
 			mHeight = 0;
@@ -92,8 +102,10 @@ public class GameProc extends Activity implements Runnable, OnGestureListener/*,
 			mRLP = null;
 			mRL = null;
 		}
-		
-		EditableTextPositionParams(TextSE pCurrentTE, XYf pPos, int pWidth, int pHeight) {
+
+		EditableTextPositionParams(TextSE pCurrentTE, XYf pPos, int pWidth,
+			int pHeight)
+		{
 			mHeight = pHeight;
 			mWidth = pWidth;
 			mQueuedViewLocation = pPos;
@@ -120,12 +132,12 @@ public class GameProc extends Activity implements Runnable, OnGestureListener/*,
 		Window tWin = getWindow();
 		tWin.addFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN);
 		tWin.clearFlags(WindowManager.LayoutParams.FLAG_FORCE_NOT_FULLSCREEN);
-		
+
 		mLayout = new RelativeLayout(this);
 		setContentView(mLayout);
-		mLayout.addView(new AnimatedView(this));		
+		mLayout.addView(new AnimatedView(this));
 		mEditTextParams = null;
-		
+
 		// initialize stats
 		mElapsedTime = 0;
 		sSeconds = 0;
@@ -181,11 +193,6 @@ public class GameProc extends Activity implements Runnable, OnGestureListener/*,
 			// TODO: load SettingsDB with default values
 		}
 
-		Log.d(TAG, "  creating static arrays");
-		ActionElement.Init();
-		ScreenElement.Init();
-		SoundEffect.Init();
-
 		// user initialization code
 		InitializeOnResume();
 
@@ -235,7 +242,7 @@ public class GameProc extends Activity implements Runnable, OnGestureListener/*,
 	 * {
 	 * Log.d(TAG, "onDestroy()");
 	 * super.onDestroy();
-	 * 
+	 *
 	 * Shutdown();
 	 * }
 	 */
@@ -318,80 +325,120 @@ public class GameProc extends Activity implements Runnable, OnGestureListener/*,
 			if(tAE.Active())
 				tAE.Update();
 		}
-		
+
 		mTouchState.Clear(true);
 	}
 
 	//AddView allows the user to pass a view (typically a layout that was inflated from XML) to be added above the normal AnimatedView Surface.
 	//We need to do this from within the original UI thread which this function facilitates.
-	public void ShowTextEditor(TextSE pCurrentTE, XYf pPos, int pWidth, int pHeight) {
-		if (mEditTextParams == null) {
-			mEditTextParams = new EditableTextPositionParams(pCurrentTE, pPos, pWidth, pHeight);
+	public void ShowTextEditor(TextSE pCurrentTE, XYf pPos, int pWidth,
+		int pHeight)
+	{
+		if(mEditTextParams == null)
+		{
+			mEditTextParams =
+				new EditableTextPositionParams(pCurrentTE, pPos, pWidth,
+					pHeight);
 			mEditTextParams.mQueuedViewLocation = pPos;
-		
-			mLayout.post(new Runnable() {
-		        public void run() {
-		        	
-		        	mEditTextParams.mRLP = new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.FILL_PARENT, RelativeLayout.LayoutParams.WRAP_CONTENT);
-		        	mEditTextParams.mRLP.setMargins((int)mEditTextParams.mQueuedViewLocation.x, (int)mEditTextParams.mQueuedViewLocation.y, 0, 0);
-		        	mEditTextParams.mRL = new RelativeLayout(GameProc.sOnly);
-		    		
-		        	mEditTextParams.mRL.setLayoutParams(mEditTextParams.mRLP);
-		    		
-		    		mEditTextParams.mEdit = new EditText(GameProc.sOnly);
-	
-		    		mEditTextParams.mRL.addView(mEditTextParams.mEdit);        
-		    	
-		    		mLayout.addView(mEditTextParams.mRL);
-	
-		    		mEditTextParams.mEdit.requestFocus();
+
+			mLayout.post(new Runnable()
+			{
+				@Override
+				public void run()
+				{
+
+					mEditTextParams.mRLP =
+						new RelativeLayout.LayoutParams(
+							RelativeLayout.LayoutParams.FILL_PARENT,
+							RelativeLayout.LayoutParams.WRAP_CONTENT);
+					mEditTextParams.mRLP.setMargins(
+						(int)mEditTextParams.mQueuedViewLocation.x,
+						(int)mEditTextParams.mQueuedViewLocation.y, 0, 0);
+					mEditTextParams.mRL = new RelativeLayout(GameProc.sOnly);
+
+					mEditTextParams.mRL.setLayoutParams(mEditTextParams.mRLP);
+
+					mEditTextParams.mEdit = new EditText(GameProc.sOnly);
+
+					mEditTextParams.mRL.addView(mEditTextParams.mEdit);
+
+					mLayout.addView(mEditTextParams.mRL);
+
+					mEditTextParams.mEdit.requestFocus();
 				}
-	        });
+			});
 		}
-		
+
 		mEditTextParams.mQueuedViewLocation = pPos;
 		mEditTextParams.mWidth = pWidth;
 		mEditTextParams.mHeight = pHeight;
 		mEditTextParams.mCurrentTE = pCurrentTE;
-		
-		mLayout.postDelayed(new Runnable() {
-	        public void run() {
-	        	mEditTextParams.mRLP.setMargins((int)(mEditTextParams.mQueuedViewLocation.x * AnimatedView.sOnly.mPreScaler), (int)(mEditTextParams.mQueuedViewLocation.y * AnimatedView.sOnly.mPreScaler), 0, 0);
-	
-	    		mEditTextParams.mRL.setLayoutParams(mEditTextParams.mRLP);
-	    		mEditTextParams.mEdit.setVisibility(View.VISIBLE);
-	    		mEditTextParams.mEdit.setWidth((int)(mEditTextParams.mWidth * AnimatedView.sOnly.mPreScaler));
-	    		mEditTextParams.mEdit.setTransformationMethod(new android.text.method.SingleLineTransformationMethod());
-	    		mEditTextParams.mEdit.setMaxLines(1);
-	    		mEditTextParams.mEdit.setBackgroundColor(Color.BLUE);
-	    		if (mEditTextParams.mCurrentTE != null && mEditTextParams.mCurrentTE.Text() != null && mEditTextParams.mCurrentTE.Text().length() > 0) {
-		    		mEditTextParams.mEdit.setText(mEditTextParams.mCurrentTE.Text());
-		    		mEditTextParams.mEdit.setSelection(mEditTextParams.mCurrentTE.Text().length());
-	    		} else {
-		    		mEditTextParams.mEdit.setText("");
-	    		}
-	    		mEditTextParams.mEdit.requestFocus();
+
+		mLayout.postDelayed(new Runnable()
+		{
+			@Override
+			public void run()
+			{
+				mEditTextParams.mRLP.setMargins(
+					(int)(mEditTextParams.mQueuedViewLocation.x * AnimatedView.sOnly.mPreScaler),
+					(int)(mEditTextParams.mQueuedViewLocation.y * AnimatedView.sOnly.mPreScaler),
+					0, 0);
+
+				mEditTextParams.mRL.setLayoutParams(mEditTextParams.mRLP);
+				mEditTextParams.mEdit.setVisibility(View.VISIBLE);
+				mEditTextParams.mEdit.setWidth((int)(mEditTextParams.mWidth * AnimatedView.sOnly.mPreScaler));
+				mEditTextParams.mEdit.setTransformationMethod(new android.text.method.SingleLineTransformationMethod());
+				mEditTextParams.mEdit.setMaxLines(1);
+				mEditTextParams.mEdit.setBackgroundColor(Color.BLUE);
+				if(mEditTextParams.mCurrentTE != null &&
+					mEditTextParams.mCurrentTE.Text() != null &&
+					mEditTextParams.mCurrentTE.Text().length() > 0)
+				{
+					mEditTextParams.mEdit.setText(mEditTextParams.mCurrentTE.Text());
+					mEditTextParams.mEdit.setSelection(mEditTextParams.mCurrentTE.Text()
+																					.length());
+				}
+				else
+				{
+					mEditTextParams.mEdit.setText("");
+				}
+				mEditTextParams.mEdit.requestFocus();
 			}
 
-        }, 100);
+		}, 100);
 	}
-	
-	public void HideTextEditor(Object pCurrentTE) {
-    	if (mEditTextParams.mCurrentTE == pCurrentTE) {
-			try {
-				mLayout.post(new Runnable() {
-			        public void run() {
-			        		mEditTextParams.mEdit.setVisibility(View.INVISIBLE);
-			        		try {
-				        		InputMethodManager tIMM = (InputMethodManager)getSystemService(Context.INPUT_METHOD_SERVICE);
-				        		tIMM.hideSoftInputFromWindow(mEditTextParams.mEdit.getWindowToken(), 0);
-			        		} catch (Exception e) {}
+
+	public void HideTextEditor(Object pCurrentTE)
+	{
+		if(mEditTextParams.mCurrentTE == pCurrentTE)
+		{
+			try
+			{
+				mLayout.post(new Runnable()
+				{
+					@Override
+					public void run()
+					{
+						mEditTextParams.mEdit.setVisibility(View.INVISIBLE);
+						try
+						{
+							InputMethodManager tIMM =
+								(InputMethodManager)getSystemService(Context.INPUT_METHOD_SERVICE);
+							tIMM.hideSoftInputFromWindow(
+								mEditTextParams.mEdit.getWindowToken(), 0);
 						}
-			        });
-			} catch (Exception e) {
+						catch(Exception e)
+						{
+						}
+					}
+				});
 			}
-    	}
+			catch(Exception e)
+			{
+			}
+		}
 	}
+
 	// runtime stats ///////////////////////////////////////////////////////////
 
 	/** Query performance statistics based on update timing. */
@@ -452,7 +499,7 @@ public class GameProc extends Activity implements Runnable, OnGestureListener/*,
 
 	@Override
 	public boolean onFling(MotionEvent e1, MotionEvent e2, float velocityX,
-			float velocityY)
+		float velocityY)
 	{
 		mTouchState.SetState(TouchState.FLING, e1, e2);
 		return false;
@@ -466,10 +513,10 @@ public class GameProc extends Activity implements Runnable, OnGestureListener/*,
 
 	@Override
 	public boolean onScroll(MotionEvent e1, MotionEvent e2, float distanceX,
-			float distanceY)
+		float distanceY)
 	{
 		AnimatedView.sOnly.mDebugString1 = distanceY + "";
-		
+
 		//if (Math.abs(distanceY) > 1.5f)
 		mTouchState.SetState(TouchState.SCROLL, e1, e2, distanceY, distanceX);
 		return false;
@@ -488,50 +535,52 @@ public class GameProc extends Activity implements Runnable, OnGestureListener/*,
 	}
 
 	//See notes above about the double tap limitations - OnDoubleTapListener
-/*	@Override
-	public boolean onDoubleTap(MotionEvent e)
-	{
-		mTouchState.SetState(TouchState.DOUBLE_TAP, e, null);
-		return false;
-	}
-
-	@Override
-	public boolean onDoubleTapEvent(MotionEvent e)
-	{
-		//Toast.makeText(GameProc.sOnly, "double tap event", 0).show();
-		return false;
-	}
-
-	@Override
-	public boolean onSingleTapConfirmed(MotionEvent e)
-	{
-		//mTouchState.SetState(TouchState.SINGLE_TAP, e, null);
-		return false;
-	}*/
+	/*
+	 * @Override
+	 * public boolean onDoubleTap(MotionEvent e)
+	 * {
+	 * mTouchState.SetState(TouchState.DOUBLE_TAP, e, null);
+	 * return false;
+	 * }
+	 *
+	 * @Override
+	 * public boolean onDoubleTapEvent(MotionEvent e)
+	 * {
+	 * //Toast.makeText(GameProc.sOnly, "double tap event", 0).show();
+	 * return false;
+	 * }
+	 *
+	 * @Override
+	 * public boolean onSingleTapConfirmed(MotionEvent e)
+	 * {
+	 * //mTouchState.SetState(TouchState.SINGLE_TAP, e, null);
+	 * return false;
+	 * }
+	 */
 
 
 	/**
 	 * TouchState is an inner class that holds state information about touch
 	 * events.
 	 * It is designed to be polled instead of event-driven.
-	 * 
+	 *
 	 * @author Christopher R. Tooley
-	 * 
+	 *
 	 */
 	public class TouchState
 	{
 		public static final int SINGLE_TAP = 1;
-		public static final int DOUBLE_TAP = 2;			//these have been removed for performance reasons
+		public static final int DOUBLE_TAP = 2; //these have been removed for performance reasons
 		public static final int FLING = 4;
-		public static final int SCROLL = 8;				//Think "drag"
+		public static final int SCROLL = 8; //Think "drag"
 		public static final int LONG_TOUCH = 16;
 
 		int mState;
 
 		MotionEvent mMainMotionEvent;
 		MotionEvent mSecondaryMotionEvent;
-		float mYScrollDist;						//holds either the velocity of the fling or the distance of the scroll
-		float mXScrollDist;						//holds either the velocity of the fling or the distance of the scroll
+		float mYScrollDist; //holds either the velocity of the fling or the distance of the scroll
+		float mXScrollDist; //holds either the velocity of the fling or the distance of the scroll
 
 		TouchState()
 		{
@@ -539,15 +588,16 @@ public class GameProc extends Activity implements Runnable, OnGestureListener/*,
 		}
 
 		public void SetState(int pState, MotionEvent pMainMotionEvent,
-				MotionEvent pSecondaryMotionEvent, float pYScrollDist, float pXScrollDist)
+			MotionEvent pSecondaryMotionEvent, float pYScrollDist,
+			float pXScrollDist)
 		{
 			SetState(pState, pMainMotionEvent, pSecondaryMotionEvent);
 			mXScrollDist = pXScrollDist;
 			mYScrollDist = pYScrollDist;
 		}
-		
+
 		public void SetState(int pState, MotionEvent pMainMotionEvent,
-				MotionEvent pSecondaryMotionEvent)
+			MotionEvent pSecondaryMotionEvent)
 		{
 			synchronized(this)
 			{
@@ -573,33 +623,39 @@ public class GameProc extends Activity implements Runnable, OnGestureListener/*,
 			}
 		}
 
-		public XYf TouchPos() {
-			if (mMainMotionEvent == null)
-				return new XYf(0,0);
-			
+		public XYf TouchPos()
+		{
+			if(mMainMotionEvent == null)
+				return new XYf(0, 0);
+
 			return new XYf(mMainMotionEvent.getX(), mMainMotionEvent.getY());
 		}
-		
-		public XYf SecondaryTouchPos() {
-			if (mSecondaryMotionEvent == null)
-				return new XYf(0,0);
-			
-			return new XYf(mSecondaryMotionEvent.getX() / AnimatedView.sOnly.mPreScaler, mSecondaryMotionEvent.getY() / AnimatedView.sOnly.mPreScaler);
+
+		public XYf SecondaryTouchPos()
+		{
+			if(mSecondaryMotionEvent == null)
+				return new XYf(0, 0);
+
+			return new XYf(mSecondaryMotionEvent.getX() /
+							AnimatedView.sOnly.mPreScaler,
+				mSecondaryMotionEvent.getY() / AnimatedView.sOnly.mPreScaler);
 		}
-		
-		public float GetXScrollDist() {
+
+		public float GetXScrollDist()
+		{
 			return mXScrollDist;
 		}
-		
-		public float GetYScrollDist() {
+
+		public float GetYScrollDist()
+		{
 			return mYScrollDist;
 		}
-		
+
 		public float GetMainX()
 		{
-			if (mMainMotionEvent == null)
+			if(mMainMotionEvent == null)
 				return 0;
-			
+
 			float tX = 0;
 			synchronized(this)
 			{
@@ -610,7 +666,7 @@ public class GameProc extends Activity implements Runnable, OnGestureListener/*,
 
 		public float GetMainY()
 		{
-			if (mMainMotionEvent == null)
+			if(mMainMotionEvent == null)
 				return 0;
 
 			float tY = 0;
@@ -623,26 +679,30 @@ public class GameProc extends Activity implements Runnable, OnGestureListener/*,
 
 		public float GetSecondaryX()
 		{
-			if (mSecondaryMotionEvent == null)
+			if(mSecondaryMotionEvent == null)
 				return 0;
 
 			float tX = 0;
 			synchronized(this)
 			{
-				tX = mSecondaryMotionEvent.getX() / AnimatedView.sOnly.mPreScaler;
+				tX =
+					mSecondaryMotionEvent.getX() /
+						AnimatedView.sOnly.mPreScaler;
 			}
 			return tX;
 		}
 
 		public float GetSecondaryY()
 		{
-			if (mSecondaryMotionEvent == null)
+			if(mSecondaryMotionEvent == null)
 				return 0;
 
 			float tY = 0;
 			synchronized(this)
 			{
-				tY = mSecondaryMotionEvent.getY() / AnimatedView.sOnly.mPreScaler;
+				tY =
+					mSecondaryMotionEvent.getY() /
+						AnimatedView.sOnly.mPreScaler;
 			}
 			return tY;
 		}

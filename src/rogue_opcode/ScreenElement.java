@@ -34,23 +34,23 @@ import android.util.Log;
 public class ScreenElement extends ActionElement
 {
 	private static final long serialVersionUID = 8512900123394987036L;
-	
+
 	protected GraphicResource mGR;
 	protected int mCurrentGRResourceID;		//Now that GRs can come in and out of scope, mGR is more likely to be null.
 											//If this SE is drawing a null mGR it will try to create a new GR based on this ID.
 
-	public boolean mTopmost;				//If true this will be drawn in the 
-											//mEffectsHookBitmap after all non topmost SEs have been drawn 
-	
+	public boolean mTopmost;				//If true this will be drawn in the
+											//mEffectsHookBitmap after all non topmost SEs have been drawn
+
 	public XYZf mPos;
 	public XYZf mVel;
-	
+
 	public XYZf mTextOffset;				//offset for text drawing relative to the adjusted mPos TODO - in what coordinates?
 											//TODO - add coordinate scaling and accessor methods
-	
+
 
 	protected boolean mVisible;
-	
+
 	public boolean mSelfGuided;
 	XYf mSelfGuidedDestination;
 	float mSelfGuidedSpeed;
@@ -59,15 +59,15 @@ public class ScreenElement extends ActionElement
 
 	protected boolean mDrawCentered;
 	protected boolean mDrawAbsolute;
-	
+
 	protected Paint mTextPaint;
 
 	// sorted on Z depth
 	// XXX: may be inefficient; keep an eye on performance
 	public static LazySortedArray<ScreenElement> sAllSEs;
 	public static int sActiveSECount = 0;
-	
-	public static void Init()
+
+	static
 	{
 		try
 		{
@@ -128,12 +128,12 @@ public class ScreenElement extends ActionElement
 			mGR = GraphicResource.FindGR(pResourceID);
 		else
 			mGR = null;
-		
+
 		mCurrentGRResourceID = pResourceID;
 
 		mPos = new XYZf(pX, pY, 100);
 		mVel = new XYZf();
-		
+
 		mTextOffset = new XYZf(0,0,0);
 		mText = pText;
 
@@ -141,7 +141,7 @@ public class ScreenElement extends ActionElement
 		mVisible = true;
 		mSelfGuided = false;
 		mTopmost = false;
-		
+
 		mSelfGuidedDestination = new XYf();
 
 		try
@@ -153,7 +153,7 @@ public class ScreenElement extends ActionElement
 			e.printStackTrace();
 		}
 	}
-	
+
 	//In theory we can call unload on an SE to remove it's reference from the list of all SEs
 	//and the list of all AEs.  The goal is to remove all references to the SE so that the garbage
 	//collector can get rid of them.
@@ -172,7 +172,7 @@ public class ScreenElement extends ActionElement
 				sAllAEs.Remove(i);
 				break;
 			}
-		
+
 		//TODO - MUST ENSURE THAT THIS IS REALLY WORKING OR WE WILL "LEAK" ALL OVER THE PLACE!
 }
 
@@ -224,12 +224,12 @@ public class ScreenElement extends ActionElement
 	public Boolean WithinRange(ScreenElement pTargetSE, float pRadius)
 	{
 		XYf tXYf = new XYf(pTargetSE.mPos);
-		
+
 		if (!pTargetSE.mDrawCentered) {
 			tXYf.x -= (pTargetSE.Width() / 2);
 			tXYf.y -= (pTargetSE.Height() / 2);
 		}
-		
+
 		return WithinRange(tXYf, pRadius);
 	}
 
@@ -237,12 +237,12 @@ public class ScreenElement extends ActionElement
 	{
 		return WithinRange(pTarget, pRadius, pRadius);
 	}
-	
+
 	public Boolean WithinRange(XYf pTarget, float pXRadius, float pYRadius)
 	{
 		if (!Visible())
 			return false;
-		
+
 		XYf tXYf = new XYf(mPos);
 
 		if (!mDrawCentered) {
@@ -312,13 +312,13 @@ public class ScreenElement extends ActionElement
 
 	public void moveTo(float pSpeed, XYf pDestination) {
 		mSelfGuided = true;
-		
+
 		mSelfGuidedDestination.x = pDestination.x;
 		mSelfGuidedDestination.y = pDestination.y;
-		
+
 		mSelfGuidedSpeed = pSpeed;
 	}
-	
+
 	//Query if a self-guided SE has reached its destination
 	public boolean HasReachedDestination() {
 		return !mSelfGuided;
@@ -327,7 +327,7 @@ public class ScreenElement extends ActionElement
 	public void setTextPaint(Paint pPaint) {
 		mTextPaint = pPaint;
 	}
-		
+
 	/**
 	 * AnimatedView will call this repeatedly during the program's lifetime
 	 * automatically. Override in your derived class to do something exciting.
@@ -340,24 +340,24 @@ public class ScreenElement extends ActionElement
 		if(mSelfGuided) {
 			double xDist = mSelfGuidedDestination.x - mPos.x;
 			double yDist = mSelfGuidedDestination.y - mPos.y;
-			
+
 			double tDistance = Math.sqrt(Math.pow(xDist,2) + Math.pow(yDist,2));
-			
+
 			if (tDistance != 0) {
 				mVel.x = (float)(xDist / tDistance) * mSelfGuidedSpeed;
 				mVel.y = (float)(yDist / tDistance) * mSelfGuidedSpeed;
 			}
-			
+
 			mPos.add(mVel);
 
 			if (tDistance <= mSelfGuidedSpeed) {
 				mSelfGuided = false;
 				mPos.x = mSelfGuidedDestination.x;
-				mPos.y = mSelfGuidedDestination.y;				
+				mPos.y = mSelfGuidedDestination.y;
 			}
 		}
 	}
-	
+
 	/**
 	 * AnimatedView will call this interface at draw time. Override in your
 	 * derived class to do something more than draw the currentGR at it's

@@ -45,8 +45,9 @@ public class Spritey extends ScreenElement
 
 	/**
 	 * Constructs a Spritey to load the specified resource.
-	 *
+	 * 
 	 * @param pResourceID resource to load.
+	 * @param pFrameCount number of frames in the sprite strip.
 	 */
 	public Spritey(int pResourceID, int pFrameCount)
 	{
@@ -57,8 +58,9 @@ public class Spritey extends ScreenElement
 	/**
 	 * Constructs a Spritey to load the specified resource at specified logical
 	 * screen coordinates.
-	 *
+	 * 
 	 * @param pResourceID resource to load.
+	 * @param pFrameCount number of frames in the sprite strip.
 	 * @param pX horizontal position of new Spritey.
 	 * @param pY vertical position of new Spritey.
 	 */
@@ -109,7 +111,6 @@ public class Spritey extends ScreenElement
 			XYf tPos = mPos;
 			RectF tDest = new RectF(tPos.x, tPos.y, tPos.x + mFrameWidth,
 					tPos.y + mGR.PhysicalHeight());
-			// XXX: toRect might be very inefficient!
 			tCanvas.drawBitmap(mGR.mImage, mFrame.toRect(), tDest, null);
 		}
 	}
@@ -138,7 +139,6 @@ public class Spritey extends ScreenElement
 	 */
 	public boolean Collide(Rectanglef pBBox)
 	{
-		// FIXME: this has got to be ridiculously inefficient!
 		return boundingBox.toRectF().intersect(pBBox.toRectF());
 	}
 
@@ -173,7 +173,7 @@ public class Spritey extends ScreenElement
 
 	/**
 	 * Gets the current bounding box.
-	 * 
+	 *
 	 * @return the current bounding box.
 	 */
 	public Rectanglef BoundingBox()
