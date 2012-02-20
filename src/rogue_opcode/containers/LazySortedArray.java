@@ -173,7 +173,7 @@ public class LazySortedArray<E> extends Array<E>
 			 */
 			try
 			{
-				Arrays.sort(data, mComparator);
+				Arrays.sort(data, 0, size, mComparator);
 			}
 			catch(Exception e)
 			{

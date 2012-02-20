@@ -15,23 +15,36 @@
 package rogue_opcode;
 
 
+//import dalvik.system.VMRuntime;
+//import com.ngc.MGEPCT.BaG;
+
 import rogue_opcode.geometrics.XYf;
 import rogue_opcode.soundy.SoundEffect;
 import android.app.Activity;
+import android.content.Context;
 import android.content.SharedPreferences;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.os.SystemClock;
 import android.util.Log;
 import android.view.GestureDetector;
-import android.view.GestureDetector.OnDoubleTapListener;
-import android.view.GestureDetector.OnGestureListener;
 import android.view.MotionEvent;
+import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
+import android.view.GestureDetector.OnGestureListener;
+import android.view.inputmethod.InputMethodManager;
+import android.widget.EditText;
+import android.widget.RelativeLayout;
 
+//import android.view.GestureDetector.OnDoubleTapListener;
+//CRT - the OnDoubleTapListener code works great, but because android is listening for the double tap after a single
+//tap you cannot tap and then flick in rapid succession as is needed in a game - for example if a single tap triggers a jump
+//and a fling triggers a move then if double tap support is enabled you cannot immediately jump and then move - the move
+//will be delayed by about a (critical) 1/2 second.
+//I'd like to make this some kind of parameter but don't know how to do that with interfaces...
 
-public class GameProc extends Activity implements Runnable, OnGestureListener,
-		OnDoubleTapListener
+public class GameProc extends Activity implements Runnable, OnGestureListener/*,OnDoubleTapListener*/
 {
 	public static final long UPDATE_FREQ = 30;
 	public static final long UPDATE_PERIOD = 1000 / UPDATE_FREQ;
@@ -39,6 +52,8 @@ public class GameProc extends Activity implements Runnable, OnGestureListener,
 
 	public static GameProc sOnly;
 	protected static Thread sUpdateThread;
+	
+	public RelativeLayout mLayout;
 
 	// stats
 	protected long mElapsedTime;
@@ -48,16 +63,43 @@ public class GameProc extends Activity implements Runnable, OnGestureListener,
 	protected boolean mMousing;
 	protected XYf mMousePos;
 
-	private GestureDetector detector;
+	private GestureDetector mMotionDetector;
 	public TouchState mTouchState;
 
 	int mCurrentKey;
 	public boolean[] mKeys; //holds the state of the keys on the keyboard
 
-
 	protected boolean mRunning;
 	protected boolean mRestarting;
 	protected boolean mExiting;
+	
+	EditableTextPositionParams mEditTextParams;
+	
+	class EditableTextPositionParams {
+		XYf mQueuedViewLocation;
+		int mWidth;
+		int mHeight;
+		TextSE mCurrentTE;
+		EditText mEdit;
+		RelativeLayout.LayoutParams mRLP;
+		RelativeLayout mRL;
+		
+		EditableTextPositionParams() {
+			mQueuedViewLocation = null;
+			mWidth = 0;
+			mHeight = 0;
+			mCurrentTE = null;
+			mRLP = null;
+			mRL = null;
+		}
+		
+		EditableTextPositionParams(TextSE pCurrentTE, XYf pPos, int pWidth, int pHeight) {
+			mHeight = pHeight;
+			mWidth = pWidth;
+			mQueuedViewLocation = pPos;
+			mCurrentTE = pCurrentTE;
+		}
+	}
 
 	// app lifecycle ///////////////////////////////////////////////////////////
 
@@ -65,9 +107,11 @@ public class GameProc extends Activity implements Runnable, OnGestureListener,
 	@Override
 	protected void onCreate(Bundle savedState)
 	{
-		//		Log.d(TAG, "onCreate()");
+		Log.d(TAG, "onCreate()");
 		super.onCreate(savedState);
 		sOnly = this;
+
+		//VMRuntime.getRuntime().setMinimumHeapSize(4 * 1048576);
 
 		mKeys = new boolean[525];
 
@@ -76,9 +120,12 @@ public class GameProc extends Activity implements Runnable, OnGestureListener,
 		Window tWin = getWindow();
 		tWin.addFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN);
 		tWin.clearFlags(WindowManager.LayoutParams.FLAG_FORCE_NOT_FULLSCREEN);
-
-		new AnimatedView(this);
-
+		
+		mLayout = new RelativeLayout(this);
+		setContentView(mLayout);
+		mLayout.addView(new AnimatedView(this));		
+		mEditTextParams = null;
+		
 		// initialize stats
 		mElapsedTime = 0;
 		sSeconds = 0;
@@ -95,7 +142,7 @@ public class GameProc extends Activity implements Runnable, OnGestureListener,
 		//		}
 
 		// user-provided init code
-		detector = new GestureDetector(this, this);
+		mMotionDetector = new GestureDetector(this, this);
 		mTouchState = new TouchState();
 
 		InitializeOnce();
@@ -116,6 +163,7 @@ public class GameProc extends Activity implements Runnable, OnGestureListener,
 	@Override
 	protected void onResume()
 	{
+		Log.d(TAG, "onResume()");
 		super.onResume();
 
 		// input data
@@ -133,6 +181,7 @@ public class GameProc extends Activity implements Runnable, OnGestureListener,
 			// TODO: load SettingsDB with default values
 		}
 
+		Log.d(TAG, "  creating static arrays");
 		ActionElement.Init();
 		ScreenElement.Init();
 		SoundEffect.Init();
@@ -142,8 +191,7 @@ public class GameProc extends Activity implements Runnable, OnGestureListener,
 
 		// start the render and update threads
 		(sUpdateThread = new Thread(this)).start();
-		(AnimatedView.sRenderThread = new Thread(AnimatedView.sOnly,
-			"Gameloop Thread")).start();
+		(AnimatedView.sRenderThread = new Thread(AnimatedView.sOnly)).start();
 
 		AnimatedView.sOnly.requestFocus();
 
@@ -187,7 +235,7 @@ public class GameProc extends Activity implements Runnable, OnGestureListener,
 	 * {
 	 * Log.d(TAG, "onDestroy()");
 	 * super.onDestroy();
-	 *
+	 * 
 	 * Shutdown();
 	 * }
 	 */
@@ -220,10 +268,10 @@ public class GameProc extends Activity implements Runnable, OnGestureListener,
 	// game update loop ////////////////////////////////////////////////////////
 
 	/** Thread to run logic updates */
-	// XXX no overrides???
-	//@Override
+	@Override
 	public void run()
 	{
+		Log.d(TAG, "Entering update thread");
 		mRunning = true;
 		while(mRunning)
 		{
@@ -266,24 +314,88 @@ public class GameProc extends Activity implements Runnable, OnGestureListener,
 	{
 		for(int i = 0; i < ActionElement.sAllAEs.size; i++)
 		{
-			try
-			{
-				ActionElement tAE = ActionElement.sAllAEs.At(i);
-				if(tAE.Active())
-					tAE.Update();
-			}
-			catch(Exception e)
-			{
-			}
+			ActionElement tAE = ActionElement.sAllAEs.At(i);
+			if(tAE.Active())
+				tAE.Update();
 		}
-
-		mTouchState.Clear();
+		
+		mTouchState.Clear(true);
 	}
 
+	//AddView allows the user to pass a view (typically a layout that was inflated from XML) to be added above the normal AnimatedView Surface.
+	//We need to do this from within the original UI thread which this function facilitates.
+	public void ShowTextEditor(TextSE pCurrentTE, XYf pPos, int pWidth, int pHeight) {
+		if (mEditTextParams == null) {
+			mEditTextParams = new EditableTextPositionParams(pCurrentTE, pPos, pWidth, pHeight);
+			mEditTextParams.mQueuedViewLocation = pPos;
+		
+			mLayout.post(new Runnable() {
+		        public void run() {
+		        	
+		        	mEditTextParams.mRLP = new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.FILL_PARENT, RelativeLayout.LayoutParams.WRAP_CONTENT);
+		        	mEditTextParams.mRLP.setMargins((int)mEditTextParams.mQueuedViewLocation.x, (int)mEditTextParams.mQueuedViewLocation.y, 0, 0);
+		        	mEditTextParams.mRL = new RelativeLayout(GameProc.sOnly);
+		    		
+		        	mEditTextParams.mRL.setLayoutParams(mEditTextParams.mRLP);
+		    		
+		    		mEditTextParams.mEdit = new EditText(GameProc.sOnly);
+	
+		    		mEditTextParams.mRL.addView(mEditTextParams.mEdit);        
+		    	
+		    		mLayout.addView(mEditTextParams.mRL);
+	
+		    		mEditTextParams.mEdit.requestFocus();
+				}
+	        });
+		}
+		
+		mEditTextParams.mQueuedViewLocation = pPos;
+		mEditTextParams.mWidth = pWidth;
+		mEditTextParams.mHeight = pHeight;
+		mEditTextParams.mCurrentTE = pCurrentTE;
+		
+		mLayout.postDelayed(new Runnable() {
+	        public void run() {
+	        	mEditTextParams.mRLP.setMargins((int)(mEditTextParams.mQueuedViewLocation.x * AnimatedView.sOnly.mPreScaler), (int)(mEditTextParams.mQueuedViewLocation.y * AnimatedView.sOnly.mPreScaler), 0, 0);
+	
+	    		mEditTextParams.mRL.setLayoutParams(mEditTextParams.mRLP);
+	    		mEditTextParams.mEdit.setVisibility(View.VISIBLE);
+	    		mEditTextParams.mEdit.setWidth((int)(mEditTextParams.mWidth * AnimatedView.sOnly.mPreScaler));
+	    		mEditTextParams.mEdit.setTransformationMethod(new android.text.method.SingleLineTransformationMethod());
+	    		mEditTextParams.mEdit.setMaxLines(1);
+	    		mEditTextParams.mEdit.setBackgroundColor(Color.BLUE);
+	    		if (mEditTextParams.mCurrentTE != null && mEditTextParams.mCurrentTE.Text() != null && mEditTextParams.mCurrentTE.Text().length() > 0) {
+		    		mEditTextParams.mEdit.setText(mEditTextParams.mCurrentTE.Text());
+		    		mEditTextParams.mEdit.setSelection(mEditTextParams.mCurrentTE.Text().length());
+	    		} else {
+		    		mEditTextParams.mEdit.setText("");
+	    		}
+	    		mEditTextParams.mEdit.requestFocus();
+			}
+
+        }, 100);
+	}
+	
+	public void HideTextEditor(Object pCurrentTE) {
+    	if (mEditTextParams.mCurrentTE == pCurrentTE) {
+			try {
+				mLayout.post(new Runnable() {
+			        public void run() {
+			        		mEditTextParams.mEdit.setVisibility(View.INVISIBLE);
+			        		try {
+				        		InputMethodManager tIMM = (InputMethodManager)getSystemService(Context.INPUT_METHOD_SERVICE);
+				        		tIMM.hideSoftInputFromWindow(mEditTextParams.mEdit.getWindowToken(), 0);
+			        		} catch (Exception e) {}
+						}
+			        });
+			} catch (Exception e) {
+			}
+    	}
+	}
 	// runtime stats ///////////////////////////////////////////////////////////
 
 	/** Query performance statistics based on update timing. */
-	public// TODO: does this belong here? Move to AnimatedView
+	// TODO: does this belong here? Move to AnimatedView
 	long FPS()
 	{
 		synchronized(this)
@@ -293,7 +405,7 @@ public class GameProc extends Activity implements Runnable, OnGestureListener,
 	}
 
 	/** Query uptime statistics for update thread. */
-	public long Seconds()
+	long Seconds()
 	{
 		synchronized(this)
 		{
@@ -326,22 +438,19 @@ public class GameProc extends Activity implements Runnable, OnGestureListener,
 
 
 	@Override
-	public boolean onTouchEvent(MotionEvent me)
+	public boolean onTouchEvent(MotionEvent pMotionEvent)
 	{
-		this.detector.onTouchEvent(me);
-		return super.onTouchEvent(me);
+		this.mMotionDetector.onTouchEvent(pMotionEvent);
+		return super.onTouchEvent(pMotionEvent);
 	}
 
-	// XXX no overrides???
-	//@Override
+	@Override
 	public boolean onDown(MotionEvent e)
 	{
-		//Toast.makeText(GameProc.sOnly, "down", 0).show();
 		return false;
 	}
 
-	// XXX no overrides???
-	//@Override
+	@Override
 	public boolean onFling(MotionEvent e1, MotionEvent e2, float velocityX,
 			float velocityY)
 	{
@@ -349,88 +458,94 @@ public class GameProc extends Activity implements Runnable, OnGestureListener,
 		return false;
 	}
 
-	// XXX no overrides???
-	//@Override
+	@Override
 	public void onLongPress(MotionEvent e)
 	{
 		mTouchState.SetState(TouchState.LONG_TOUCH, e, null);
 	}
 
-	// XXX no overrides???
-	//@Override
+	@Override
 	public boolean onScroll(MotionEvent e1, MotionEvent e2, float distanceX,
 			float distanceY)
 	{
-		//Toast.makeText(GameProc.sOnly, "scroll", 0).show();
+		AnimatedView.sOnly.mDebugString1 = distanceY + "";
+		
+		//if (Math.abs(distanceY) > 1.5f)
+		mTouchState.SetState(TouchState.SCROLL, e1, e2, distanceY, distanceX);
 		return false;
 	}
 
-	// XXX no overrides???
-	//@Override
+	@Override
 	public void onShowPress(MotionEvent e)
 	{
-		//Toast.makeText(GameProc.sOnly, "show press", 0).show();
 	}
 
-	// XXX no overrides???
-	//@Override
+	@Override
 	public boolean onSingleTapUp(MotionEvent e)
 	{
-		//Toast.makeText(GameProc.sOnly, "single tap up", 0).show();
+		mTouchState.SetState(TouchState.SINGLE_TAP, e, null);
 		return false;
 	}
 
-	// XXX no overrides???
-	//@Override
+	//See notes above about the double tap limitations - OnDoubleTapListener
+/*	@Override
 	public boolean onDoubleTap(MotionEvent e)
 	{
 		mTouchState.SetState(TouchState.DOUBLE_TAP, e, null);
 		return false;
 	}
 
-	// XXX no overrides???
-	//@Override
+	@Override
 	public boolean onDoubleTapEvent(MotionEvent e)
 	{
 		//Toast.makeText(GameProc.sOnly, "double tap event", 0).show();
 		return false;
 	}
 
-	// XXX no overrides???
-	//@Override
+	@Override
 	public boolean onSingleTapConfirmed(MotionEvent e)
 	{
-		mTouchState.SetState(TouchState.SINGLE_TAP, e, null);
+		//mTouchState.SetState(TouchState.SINGLE_TAP, e, null);
 		return false;
-	}
+	}*/
 
 
 	/**
 	 * TouchState is an inner class that holds state information about touch
 	 * events.
 	 * It is designed to be polled instead of event-driven.
-	 *
+	 * 
 	 * @author Christopher R. Tooley
-	 *
+	 * 
 	 */
 	public class TouchState
 	{
 		public static final int SINGLE_TAP = 1;
-		public static final int DOUBLE_TAP = 2;
+		public static final int DOUBLE_TAP = 2;			//these have been removed for performance reasons
 		public static final int FLING = 4;
-		public static final int SCROLL = 8;
+		public static final int SCROLL = 8;				//Think "drag"
 		public static final int LONG_TOUCH = 16;
 
 		int mState;
 
 		MotionEvent mMainMotionEvent;
 		MotionEvent mSecondaryMotionEvent;
+		float mYScrollDist;						//holds either the velocity of the fling or the distance of the scroll
+		float mXScrollDist;						//holds either the velocity of the fling or the distance of the scroll
 
 		TouchState()
 		{
 			Clear();
 		}
 
+		public void SetState(int pState, MotionEvent pMainMotionEvent,
+				MotionEvent pSecondaryMotionEvent, float pYScrollDist, float pXScrollDist)
+		{
+			SetState(pState, pMainMotionEvent, pSecondaryMotionEvent);
+			mXScrollDist = pXScrollDist;
+			mYScrollDist = pYScrollDist;
+		}
+		
 		public void SetState(int pState, MotionEvent pMainMotionEvent,
 				MotionEvent pSecondaryMotionEvent)
 		{
@@ -450,50 +565,84 @@ public class GameProc extends Activity implements Runnable, OnGestureListener,
 			}
 		}
 
+		private void Clear(boolean pInternalCall)
+		{
+			synchronized(this)
+			{
+				mState = 0;
+			}
+		}
+
 		public XYf TouchPos() {
+			if (mMainMotionEvent == null)
+				return new XYf(0,0);
+			
 			return new XYf(mMainMotionEvent.getX(), mMainMotionEvent.getY());
 		}
-
+		
 		public XYf SecondaryTouchPos() {
-			return new XYf(mSecondaryMotionEvent.getX(), mSecondaryMotionEvent.getY());
+			if (mSecondaryMotionEvent == null)
+				return new XYf(0,0);
+			
+			return new XYf(mSecondaryMotionEvent.getX() / AnimatedView.sOnly.mPreScaler, mSecondaryMotionEvent.getY() / AnimatedView.sOnly.mPreScaler);
 		}
-
+		
+		public float GetXScrollDist() {
+			return mXScrollDist;
+		}
+		
+		public float GetYScrollDist() {
+			return mYScrollDist;
+		}
+		
 		public float GetMainX()
 		{
+			if (mMainMotionEvent == null)
+				return 0;
+			
 			float tX = 0;
 			synchronized(this)
 			{
-				tX = mMainMotionEvent.getX();
+				tX = mMainMotionEvent.getX() / AnimatedView.sOnly.mPreScaler;
 			}
 			return tX;
 		}
 
 		public float GetMainY()
 		{
+			if (mMainMotionEvent == null)
+				return 0;
+
 			float tY = 0;
 			synchronized(this)
 			{
-				tY = mMainMotionEvent.getY();
+				tY = mMainMotionEvent.getY() / AnimatedView.sOnly.mPreScaler;
 			}
 			return tY;
 		}
 
 		public float GetSecondaryX()
 		{
+			if (mSecondaryMotionEvent == null)
+				return 0;
+
 			float tX = 0;
 			synchronized(this)
 			{
-				tX = mSecondaryMotionEvent.getX();
+				tX = mSecondaryMotionEvent.getX() / AnimatedView.sOnly.mPreScaler;
 			}
 			return tX;
 		}
 
 		public float GetSecondaryY()
 		{
+			if (mSecondaryMotionEvent == null)
+				return 0;
+
 			float tY = 0;
 			synchronized(this)
 			{
-				tY = mSecondaryMotionEvent.getY();
+				tY = mSecondaryMotionEvent.getY() / AnimatedView.sOnly.mPreScaler;
 			}
 			return tY;
 		}

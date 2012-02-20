@@ -14,6 +14,8 @@
 
 package rogue_opcode.containers;
 
+import java.util.Iterator;
+
 
 /** When directly accessing the underlying {@code data} array, indices {@code
  * [0, size)} are valid.
@@ -21,9 +23,10 @@ package rogue_opcode.containers;
  * @see rogue_opcode.containers.Container
  * @author Brigham Toskin
  */
-public class Array<E> extends Container<E>
+public class Array<E> extends Container<E> implements Iterator<E>, Iterable<E>
 {
 	private static final long serialVersionUID = -90938033040808162L;
+	int mIteratorIndex;
 
 	// c'tor //
 
@@ -89,5 +92,31 @@ public class Array<E> extends Container<E>
 	{
 		resize_inc();
 		data[size-1] = pVal;
+	}
+
+
+	@Override
+	public boolean hasNext()
+	{
+		return (mIteratorIndex < size);
+	}
+
+	@Override
+	public E next()
+	{
+		validate_index(mIteratorIndex);
+		return data[mIteratorIndex ++];
+	}
+
+	@Override
+	public void remove()
+	{
+	}
+
+	@Override
+	public Iterator<E> iterator()
+	{
+		mIteratorIndex = 0;
+		return (Iterator<E>)this;
 	}
 }
