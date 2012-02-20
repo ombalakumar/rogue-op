@@ -1,7 +1,7 @@
 // ActionElement.java
 // Updatable interface for active entities.
 //
-// Copyright ©2010 Christopher Tooley
+// Copyright ©2010-2012 Christopher Tooley, Brigham Toskin
 // This software is part of the Rogue-Opcode game framework. It is distributable
 // under the terms of a modified MIT License. You should have received a copy of
 // the license in the file LICENSE. If not, see:
@@ -17,7 +17,6 @@ package rogue_opcode;
 import java.io.Serializable;
 
 import rogue_opcode.containers.Array;
-
 import android.util.Log;
 
 
@@ -38,7 +37,7 @@ public abstract class ActionElement implements Serializable
 	private static final long serialVersionUID = 3959649135411049295L;
 
 	public static Array<ActionElement> sAllAEs;
-	public static void Init()
+	static
 	{
 		try
 		{
@@ -56,28 +55,22 @@ public abstract class ActionElement implements Serializable
 
 	public ActionElement()
 	{
-		try
-		{
-			sAllAEs.Append(this);
-		}
-		catch(Exception e)
-		{
-		}
+		sAllAEs.Append(this);
 	}
 
-	// override in your derived class to do something exciting
+	/** override in your derived class to do something exciting. */
 	public void Update()
 	{
 	}
 
-	// override in your derived class to do something exciting
+	/** override in your derived class to do something exciting. */
 	public void Reset()
 	{
 	}
 
-	public void Active(boolean mActive)
+	public void Active(boolean pActive)
 	{
-		this.mActive = mActive;
+		mActive = pActive;
 	}
 
 	public boolean Active()

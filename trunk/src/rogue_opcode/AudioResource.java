@@ -63,10 +63,10 @@ public abstract class AudioResource
 	/**
 	 * Constructs an <code>AudioResource</code> instance, defaulting to the more
 	 * expensive but safer implementation to allow for longer audio files.
-	 *
+	 * 
 	 * @param pResID audio resource to load.
 	 * @return a newly constructed specific instance.
-	 * @see AudioResource#ICanHas(int, boolean)
+	 * @see AudioResource#ICanHas(int, AudioType)
 	 */
 	// XXX: does this still make sense?
 	public static AudioResource ICanHas(int pResID)

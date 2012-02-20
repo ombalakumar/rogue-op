@@ -44,12 +44,8 @@ public class SoundEffect extends AudioResource implements Serializable
 	/** Default value for unimplemented resample quality parameter. */
 	static final int QUALITY = 0;
 
-	public static SoundPool sPool;
-
-	public static void Init()
-	{
-		sPool = new SoundPool(4, AudioManager.STREAM_MUSIC, QUALITY);
-	}
+	public static SoundPool sPool = new SoundPool(4, AudioManager.STREAM_MUSIC,
+		QUALITY);
 
 	protected int mSndID;
 	protected int mStrmID = 0;
@@ -196,7 +192,7 @@ public class SoundEffect extends AudioResource implements Serializable
 	 * Finds the {@code AudioResource} associated with the specified {@code
 	 * resource} ID, if it exists. Otherwise, constructs a new {@code
 	 * SoundEffect} instance and loads the appropriate resource.
-	 * 
+	 *
 	 * @param pResID the {@code resource} ID to retrieve.
 	 * @return an {@code AudioResource} handle to a {@code SoundEffect} instance
 	 *         with the requested resource.
