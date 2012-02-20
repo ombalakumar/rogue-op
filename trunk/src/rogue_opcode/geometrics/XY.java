@@ -25,8 +25,8 @@ public class XY extends Point implements Serializable
 {
 	private static final long serialVersionUID = -6432112948349497390L;
 
-	public XY(int x, int y)
+	public XY(int pX, int pY)
 	{
-		super(x, y);
+		super(pX, pY);
 	}
 }

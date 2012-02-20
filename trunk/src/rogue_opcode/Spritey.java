@@ -92,8 +92,8 @@ public class Spritey extends ScreenElement
 		while(timeSinceLastFrame > msecsPerFrame)
 		{
 			timeSinceLastFrame -= msecsPerFrame;
-			tFrame.x += mFrameWidth;
-			if(tFrame.x >= mGR.PhysicalWidth())
+			tFrame.X(mFrameWidth);
+			if(tFrame.X() >= mGR.PhysicalWidth())
 				// right side is off the end; reset
 				resetFrame();
 		}
@@ -116,7 +116,7 @@ public class Spritey extends ScreenElement
 
 	protected void resetFrame()
 	{
-		mFrame.x = 0;
+		mFrame.X(0);
 	}
 
 	/**
@@ -164,14 +164,18 @@ public class Spritey extends ScreenElement
 	public void Offset(int value)
 	{
 		bbOffset = value;
-		boundingBox.x = (int)mPos.x + bbOffset;
-		boundingBox.y = (int)mPos.y + bbOffset;
-		boundingBox.w = mFrameWidth - bbOffset * 2; // shrink in from both sides
-		boundingBox.h = mFrameHeight - bbOffset * 2;
+		boundingBox.X((int)mPos.x + bbOffset);
+		boundingBox.Y((int)mPos.y + bbOffset);
+		boundingBox.W(mFrameWidth - bbOffset * 2); // shrink in from both sides
+		boundingBox.H(mFrameHeight - bbOffset * 2);
 	}
 
 
-	/** Gets the current bounding box. */
+	/**
+	 * Gets the current bounding box.
+	 * 
+	 * @return the current bounding box.
+	 */
 	public Rectanglef BoundingBox()
 	{
 		return boundingBox;
