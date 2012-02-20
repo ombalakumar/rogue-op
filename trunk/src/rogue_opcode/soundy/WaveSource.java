@@ -267,12 +267,13 @@ public abstract class WaveSource
 	 * the method you probably want. It doesn't offer any parameter modulation
 	 * or slide features. It will, however, respect your envelope if you have
 	 * defined one for this oscillator.
-	 *
-	 * @param oStream
-	 * @param pFreq
-	 * @param pPhase
-	 * @param pVol
-	 * @param pNoteOn
+	 * 
+	 * @param oStream out param for stream buffer to write to.
+	 * @param pFreq frequency of wave to synthesize.
+	 * @param pPhase phase offset of wave to synthesize.
+	 * @param pVol output volume of wave to synthesize.
+	 * @param pNoteOn analogous to whether keyboard key is being held down. This
+	 *        is used when calculating the envelope.
 	 */
 	public void SynthBasic(float[] oStream, float pFreq, float pPhase,
 			float pVol, boolean pNoteOn)
@@ -331,7 +332,6 @@ public abstract class WaveSource
 	 */
 	protected static float amp_mod(float pW, float pLFO)
 	{
-		//		return pW * ((pLFO + 1.0f) / 2.0f);
 		return pW * ((pLFO + 1.0f) * 0.5f); // times normalized lfo amp
 	}
 

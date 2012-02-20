@@ -39,7 +39,7 @@ public class Soundy extends AudioResource
 	protected Oscillator mSynth1, mSynth2, mSynth3, mSynth4;
 
 	/**
-	 * @param pResID
+	 * @param pResID the raw resource ID to load.
 	 */
 	public Soundy(int pResID)
 	{
@@ -47,10 +47,6 @@ public class Soundy extends AudioResource
 		// TODO: read input file and allocate the above audio classes
 	}
 
-	/**
-	 * @return
-	 * @see rogue_opcode.AudioResource#Loop()
-	 */
 	@Override
 	public boolean Loop()
 	{
@@ -58,70 +54,40 @@ public class Soundy extends AudioResource
 		return false;
 	}
 
-	/**
-	 * @param pLoop
-	 * @see rogue_opcode.AudioResource#Loop(boolean)
-	 */
 	@Override
 	public void Loop(boolean pLoop)
 	{
 		// TODO Auto-generated method stub
-
 	}
 
-	/**
-	 *
-	 * @see rogue_opcode.AudioResource#Pause()
-	 */
 	@Override
 	public void Pause()
 	{
 		// TODO Auto-generated method stub
-
 	}
 
-	/**
-	 *
-	 * @see rogue_opcode.AudioResource#Play()
-	 */
 	@Override
 	public void Play()
 	{
 		// TODO Auto-generated method stub
-
 	}
 
-	/**
-	 *
-	 * @see rogue_opcode.AudioResource#Resume()
-	 */
 	@Override
 	public void Resume()
 	{
 		// TODO Auto-generated method stub
-
 	}
 
-	/**
-	 *
-	 * @see rogue_opcode.AudioResource#Stop()
-	 */
 	@Override
 	public void Stop()
 	{
 		// TODO Auto-generated method stub
-
 	}
 
-	/**
-	 *
-	 * @see rogue_opcode.AudioResource#die()
-	 */
 	@Override
 	protected void die()
 	{
 		// TODO Auto-generated method stub
-
 	}
 
 }
