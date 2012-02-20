@@ -36,9 +36,9 @@ class PulseWave extends WaveSource
 {
 	/**
 	 * Dynamically generates a single audio sample.
-	 *
-	 * @param pPhase current phase of the pulse wave; ignored for noise.
-	 * @return the generated sample.
+	 * 
+	 * @param pPhase phase of the sample to get.
+	 * @return the requested sample.
 	 */
 	@Override
 	protected float get_sample(float pPhase)
@@ -59,9 +59,10 @@ class WhiteNoise extends WaveFunctor
 	}
 
 	/**
-	 * @param pPhase
-	 * @return
-	 * @see rogue_opcode.soundy.WaveSource#get_sample(float)
+	 * Gets a sample of white noise.
+	 *
+	 * @param pPhase phase of the sample to get.
+	 * @return the requested sample.
 	 */
 	@Override
 	protected float get_sample(float pPhase)
@@ -84,9 +85,10 @@ class FMNoise extends WaveFunctor
 	}
 
 	/**
-	 * @param pPhase
-	 * @return
-	 * @see rogue_opcode.soundy.WaveSource#get_sample(float)
+	 * Gets a sample of FM noise.
+	 *
+	 * @param pPhase phase of the sample to get.
+	 * @return the requested sample.
 	 */
 	@Override
 	protected float get_sample(float pPhase)
@@ -99,7 +101,7 @@ class FMNoise extends WaveFunctor
 
 class PinkNoise extends WaveFunctor
 {
-	// fm noise state
+	// noise state
 	protected int mDuration;
 	protected float mNoiseFlip, mNoiseAmp;
 
@@ -115,9 +117,10 @@ class PinkNoise extends WaveFunctor
 	}
 
 	/**
-	 * @param pPhase
-	 * @return
-	 * @see rogue_opcode.soundy.WaveSource#get_sample(float)
+	 * Gets a sample of pink noise.
+	 *
+	 * @param pPhase phase of the sample to get.
+	 * @return the requested sample.
 	 */
 	@Override
 	protected float get_sample(float pPhase)

@@ -34,6 +34,8 @@ public class WaveTabler extends WaveSource
 	/**
 	 * Constructs an instance with an internal wavetable buffer of an
 	 * appropriate size to hold one cycle at 1 Hz at the specified sample rate.
+	 *
+	 * @param pType the type of waveform to create a table for.
 	 */
 	public WaveTabler(WaveForm pType)
 	{
@@ -61,6 +63,8 @@ public class WaveTabler extends WaveSource
 	 * Implement this method to generate the appropriate wave function values.
 	 * This method should have an internal loop to fill the entire
 	 * <code>mWaveData</code>array based on the current member parameters.
+	 * 
+	 * @param pType the type of waveform to create a table for.
 	 */
 	protected void generate_table(WaveForm pType)
 	{

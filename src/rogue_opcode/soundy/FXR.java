@@ -1,7 +1,7 @@
 // FXR.java
 // SFXR file loader and playback class
 //
-// Copyright ©2010 Brigham Toskin
+// Copyright ©2010-2012 Brigham Toskin
 // This software is part of the Rogue-Opcode game framework. It is distributable
 // under the terms of a modified MIT License. You should have received a copy of
 // the license in the file LICENSE. If not, see:
@@ -14,7 +14,17 @@
 
 package rogue_opcode.soundy;
 
+import java.io.BufferedInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+
 import rogue_opcode.AudioResource;
+import rogue_opcode.GameProc;
+import android.content.res.Resources;
+import android.media.AudioFormat;
+import android.media.AudioManager;
+import android.media.AudioTrack;
+import android.util.Log;
 
 
 /**
@@ -34,37 +44,65 @@ import rogue_opcode.AudioResource;
  */
 public class FXR extends AudioResource
 {
+	protected AudioTrack mOutStream;
+
 	protected WaveSource mSynth;
 	protected boolean mRandomize;
+	protected byte[] mData;
 
 	// c'tors //
 
 	/**
-	 * @param pResID
+	 * Constructs an instance for the specified resource.
+	 *
+	 * @param pResID raw resource ID of the SFXR audio file.
 	 */
 	public FXR(int pResID)
 	{
 		this(pResID, false);
 	}
 
+	/**
+	 * Constructs an instance for the specified resource.
+	 *
+	 * @param pResID raw resource ID of the SFXR audio file.
+	 * @param pRandomize whether to randomize the sound params on playback.
+	 */
 	public FXR(int pResID, boolean pRandomize)
 	{
 		super(pResID);
 		mRandomize = pRandomize;
-		int tLength = 0; // TODO: load file and calculate length
+		Resources tRes = GameProc.sOnly.getResources();
+		InputStream tStream = new BufferedInputStream(tRes.openRawResource(pResID));
+		int tLength = 0;
+		try
+		{
+			tLength = tStream.available();
+			mData = new byte[tLength];
+			tStream.read(mData);
+		}
+		catch(Exception e)
+		{
+			Log.e("ionoclast", "Error loading specified resource.", e);
+			try
+			{
+				tStream.close();
+			}
+			catch(IOException e1)
+			{
+				// nothing
+			}
+			return;
+		}
 		// TODO: deduce the kind of WaveSource from file
-		/*mOutStream = new AudioTrack(AudioManager.STREAM_MUSIC,
+		mOutStream = new AudioTrack(AudioManager.STREAM_MUSIC,
 			WaveSource.sSampleRate, AudioFormat.CHANNEL_CONFIGURATION_MONO,
 			WaveSource.sFormat, tLength,
-			(pRandomize ? AudioTrack.MODE_STREAM : AudioTrack.MODE_STATIC));*/
+			(pRandomize ? AudioTrack.MODE_STREAM : AudioTrack.MODE_STATIC));
 	}
 
 	// playback interfaces /////////////////////////////////////////////////////
 
-	/**
-	 * @return
-	 * @see rogue_opcode.AudioResource#Loop()
-	 */
 	@Override
 	public boolean Loop()
 	{
@@ -72,70 +110,39 @@ public class FXR extends AudioResource
 		return false;
 	}
 
-	/**
-	 * @param pLoop
-	 * @see rogue_opcode.AudioResource#Loop(boolean)
-	 */
 	@Override
 	public void Loop(boolean pLoop)
 	{
 		// TODO Auto-generated method stub
-
 	}
 
-	/**
-	 *
-	 * @see rogue_opcode.AudioResource#Pause()
-	 */
 	@Override
 	public void Pause()
 	{
-		// TODO Auto-generated method stub
 
 	}
 
-	/**
-	 *
-	 * @see rogue_opcode.AudioResource#Play()
-	 */
 	@Override
 	public void Play()
 	{
 		// TODO Auto-generated method stub
-
 	}
 
-	/**
-	 *
-	 * @see rogue_opcode.AudioResource#Resume()
-	 */
 	@Override
 	public void Resume()
 	{
 		// TODO Auto-generated method stub
-
 	}
 
-	/**
-	 *
-	 * @see rogue_opcode.AudioResource#Stop()
-	 */
 	@Override
 	public void Stop()
 	{
 		// TODO Auto-generated method stub
-
 	}
 
-	/**
-	 *
-	 * @see rogue_opcode.AudioResource#die()
-	 */
 	@Override
 	protected void die()
 	{
 		// TODO Auto-generated method stub
-
 	}
-
 }
