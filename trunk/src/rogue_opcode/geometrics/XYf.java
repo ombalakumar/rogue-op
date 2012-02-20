@@ -53,6 +53,12 @@ public class XYf implements Serializable
 		return new Point(Math.round(x), Math.round(y));
 	}
 
+	public void set(XYf xy)
+	{
+		x = xy.x;
+		y = xy.y;
+	}
+
 	// arithmetic operators ////////////////////////////////////////////////////
 
 	public XYf plus(XYf xy)

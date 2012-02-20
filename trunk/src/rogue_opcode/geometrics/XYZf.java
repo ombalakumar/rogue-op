@@ -50,6 +50,13 @@ public class XYZf extends XYf
 		return "(" + x + ", " + y + ", " + z + ")";
 	}
 
+	public void set(XYZf xyz)
+	{
+		x = xyz.x;
+		y = xyz.y;
+		z = xyz.z;
+	}
+
 	// arithmetic operators ////////////////////////////////////////////////////
 
 	public XYZf plus(XYZf xyz)

@@ -30,32 +30,32 @@ import java.util.Set;
 public class StringMap<V> extends HashMap<Integer, V>
 {
 	private static final long serialVersionUID = 7710690646684396854L;
-
+	
 	private Set<String> mKeySet;
-
+	
 	// c'tors //////////////////////////////////////////////////////////////////
 
 	public StringMap()
 	{
 		super();
 	}
-
+	
 	public StringMap(int initialCapacity)
 	{
 		super(initialCapacity);
 	}
-
+	
 	public StringMap(int initialCapacity, float loadFactor)
 	{
 		super(initialCapacity, loadFactor);
 	}
-
+	
 	public StringMap(Map<? extends Integer,? extends V> m)
 	{
 		super(m);
 	}
-
-	// HashMap interface ///////////////////////////////////////////////////////
+	
+	// HashMap overrides ///////////////////////////////////////////////////////
 
 	/* (non-Javadoc)
 	 * @see java.util.HashMap#containsKey(java.lang.Object)
@@ -67,46 +67,21 @@ public class StringMap<V> extends HashMap<Integer, V>
 		return super.containsKey(hash((String)key));
 	}
 
-	/**
-	 * Locates the requested entry and returns its hash ID.
-	 *
-	 * @param key
-	 * @return valid hash id of located entry, or -1 if not found
-	 * @see getByID
-	 */
-	public int findByName(String key)
-	{
-		int tID = hash(key);
-		return containsKey(tID) ? tID : -1;
-	}
-
-	/**
-	 * Gets the requested entry, if it exists.
-	 *
-	 * @param id valid hash id of requested entry.
-	 * @return the requested entry, or null.
-	 * @see findIDByName
-	 */
-	public V getByID(int id)
-	{
-		return get(id);
-	}
-
 	/* (non-Javadoc)
 	 * @see java.util.HashMap#get(java.lang.Object)
 	 */
 	@Override
 	public V get(Object key)
 	{
-		int tHash = hash((String)key);
-		return super.get(tHash);
+//		err.println("get(" + key + ": " + hash((String)key) + ")");
+		return super.get(hash((String)key));
 	}
 
 	/* (non-Javadoc)
 	 * @see java.util.HashMap#keySet()
 	 */
 	@Override
-	@SuppressWarnings("unchecked")
+	@SuppressWarnings({ "unchecked", "rawtypes" })
 	public Set keySet()
 	{
 		return new HashSet<String>(mKeySet);
@@ -121,7 +96,7 @@ public class StringMap<V> extends HashMap<Integer, V>
 		if(mKeySet == null)
 			mKeySet = new HashSet<String>();
 		mKeySet.add(key);
-		return super.put(hash(key), value);
+		return super.put(hash((String)key), value);
 	}
 
 	/* (non-Javadoc)
@@ -133,7 +108,7 @@ public class StringMap<V> extends HashMap<Integer, V>
 		mKeySet.remove(key);
 		return super.remove(hash((String)key));
 	}
-
+	
 	@Override
 	public String toString()
 	{
@@ -148,13 +123,15 @@ public class StringMap<V> extends HashMap<Integer, V>
 
 	private int hash(String pData)
 	{
-		int tLen = pData.length();
 		if(pData == null || pData.length() == 0)
 			return 0;
 
+		int tLen = pData.length();
 		int tHash = tLen;
 		int next;
-		int tRemainder = tLen & 3;
+		int tRemainder;
+
+		tRemainder = tLen & 3;
 		//tLen >>= 2;
 
 		// iterate over data chars
@@ -196,10 +173,9 @@ public class StringMap<V> extends HashMap<Integer, V>
 
 		return tHash;
 	}
-
+	
 	private int get_word(String pData, int i)
 	{
-		//		return (pData.charAt(i) << 8) + pData.charAt(i + 1) & 0x0000ffff;
-		return pData.charAt(i);
+		return (pData.charAt(i) << 8) + pData.charAt(i + 1) & 0x0000ffff;
 	}
 }
