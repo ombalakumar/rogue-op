@@ -3,7 +3,7 @@
 
 {{{
 Rogue-Opcode game framework
-Copyright ©2009-2011 Brigham Toskin, Leea Harlan, Christopher R. Tooley
+Copyright © 2009-2013 Brigham Toskin, Leea Harlan, Christopher R. Tooley
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
